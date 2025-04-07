@@ -1,0 +1,21 @@
+body {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+.card {
+    margin-bottom: 20px;
+}
+
+.camera-container {
+    width: 100%;
+    max-height: 400px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+#videoCamara {
+    width: 100%;
+    height: auto;
+    display: block;
+}
