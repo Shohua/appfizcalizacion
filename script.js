@@ -43,50 +43,56 @@ document.addEventListener("DOMContentLoaded", function() {
                     "¿La pintura está uniforme sin manchas o faltantes?": null,
                     "¿El color es el especificado?": null
                 },
-                "06. Cerámica - Frague Espejo": {
+                "06. Cerámica - Frague Muro": {
                     "¿Las cerámicas están correctamente instaladas?": null,
                     "¿El fragüe es uniforme y completo?": null,
-                    "¿Hay piezas sueltas o dañadas?": null
                 },
                 "07. Cerámica - Frague Piso": {
                     "¿Las cerámicas del piso están bien instaladas?": null,
                     "¿El fragüe es uniforme y sin faltantes?": null,
-                    "¿Hay piezas sueltas o quebradas?": null
                 },
                 "08. Enchufes - Interruptores": {
-                    "¿Los enchufes e interruptores funcionan correctamente?": null,
-                    "¿Están correctamente instalados y nivelados?": null
+                    "¿Los enchufes funcionan correctamente?": null,
+                    "¿Los interruptores operan bien?": null,
                 },
-                "09. Centro de Luz": {
+                "09. Puerta y marco": {
+                    "¿El marco está bien instalado?": null,
+                    "¿La pintura de la puerta está bien aplicada?": null,
+                    "¿Las bisagras 3x3 funcionan correctamente?": null,
+                    "¿La cerradura funciona bien?": null,
+                    "¿La celosia está bien instalada?": null,
+                    "¿El tope de puerta está instalado?": null,
+                    "¿El burlete esta bien instalado?": null,
+                },
+                "10. Centro de Luz": {
                     "¿El centro de luz funciona correctamente?": null,
-                    "¿Está bien instalado y seguro?": null
+                    "¿Está bien instalado y seguro?": null,
+                    "¿las Tapa ciegas estan correctamente instaladas?": null,
                 },
-                "10. Extractor": {
+                "11. Extractor": {
                     "¿El extractor funciona correctamente?": null,
                     "¿Está bien instalado y sin fugas?": null
                 },
-                "11. Lavaplatos - Sello": {
-                    "¿El sello del lavaplatos está completo y sin fugas?": null
+                "12. Mueble - Lavaplatos": {
+                    "¿El sello del lavaplatos está completo y sin fugas?": null,
+                    "¿El lavaplatos está bien instalado?": null,
                 },
-                "12. Grifería Lavaplatos": {
+                "13. Grifería Lavaplatos": {
                     "¿La grifería funciona correctamente sin fugas?": null
                 },
-                "13. Sifón Lavaplatos": {
+                "14. Sifón Lavaplatos": {
                     "¿El sifón está bien instalado y sin fugas?": null
                 },
-                "14. Mueble": {
-                    "¿El mueble está bien instalado y sin daños?": null
-                },
-                "15. Llave de Corte": {
+                "16. Llave de Corte": {
                     "¿La llave de corte funciona correctamente?": null
                 },
-                "16. Red de Gas": {
+                "17 . Red de Gas": {
                     "¿La instalación de gas está correcta y sin fugas?": null
                 },
-                "17. Limpieza": {
+                "18. Limpieza": {
                     "¿El área está completamente limpia?": null
                 },
-                "18. Otros": {
+                "19. Otros": {
                     "¿Hay otros aspectos a señalar en esta área?": null
                 }
             },
@@ -103,38 +109,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 "04. Corniza": {
                     "¿La corniza está bien instalada?": null
                 },
-                "05. Pintura Esmalte Cielo - Muro": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "06. Cerámica - Frague Espejo": {
-                    "¿Las cerámicas están bien instaladas?": null
+                "06. Cerámica - Frague Muro": {
+                    "¿Las cerámicas están bien instaladas?": null,
+                    "¿El fragüe es uniforme y completo?": null,
                 },
                 "07. Cerámica - Frague Piso": {
-                    "¿El piso cerámico está en buen estado?": null
+                    "¿El piso cerámico está en buen estado?": null,
+                    "¿El fragüe es uniforme y sin faltantes?": null,
                 },
                 "08. Enchufes - Interruptores": {
-                    "¿Los enchufes e interruptores funcionan bien?": null
+                    "¿Los enchufes funcionan bien?": null,
+                    "¿Los interruptores operan bien?": null,
                 },
                 "09. Centro de Luz": {
                     "¿El centro de luz funciona correctamente?": null
-                },
-                "10. Puerta 80 cm Con Celosia": {
-                    "¿La puerta funciona correctamente?": null
-                },
-                "11. Marco": {
-                    "¿El marco está bien instalado?": null
-                },
-                "12. Pintura Puerta - Marco": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "13. Bisagra 3x3": {
-                    "¿Las bisagras funcionan correctamente?": null
-                },
-                "14. Cerradura": {
-                    "¿La cerradura funciona bien?": null
-                },
-                "15. Tope de Puerta": {
-                    "¿El tope de puerta está instalado?": null
                 },
                 "16. Lavadero - Sello": {
                     "¿El sello del lavadero está completo?": null
@@ -160,9 +148,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 "23. Red de Gas": {
                     "¿La instalación de gas está correcta?": null
                 },
-                "24. Ventana Celosia - Sellos": {
-                    "¿La ventana está bien sellada?": null
-                },
                 "25. Limpieza": {
                     "¿El área está limpia?": null
                 },
@@ -186,38 +171,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 "05. Corniza": {
                     "¿La corniza está bien instalada?": null
                 },
-                "06. Ventanal - Sello": {
-                    "¿El ventanal está bien sellado?": null
+                "06. Ventanal": {
+                    "¿El ventanal está bien sellado?": null,
+                    "¿El burlete esta bien instalado?": null,
                 },
-                "07. Puerta 85": {
-                    "¿La puerta funciona correctamente?": null
-                },
-                "08. Marco": {
-                    "¿El marco está bien instalado?": null
-                },
-                "09. Pintura Puerta - Marco": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "10. Bisagra 3 1/2 x 3 1/2": {
-                    "¿Las bisagras funcionan bien?": null
-                },
-                "11. Cerraduras": {
-                    "¿Las cerraduras funcionan correctamente?": null
-                },
-                "12. Tirador Puerta": {
-                    "¿El tirador está bien instalado?": null
-                },
-                "13. Tope Puerta": {
-                    "¿El tope está instalado?": null
-                },
-                "14. Pintura Puerta": {
-                    "¿La pintura está bien aplicada?": null
+                "09. Puerta y marco": {
+                    "¿El marco está bien instalado?": null,
+                    "¿La pintura de la puerta está bien aplicada?": null,
+                    "¿Las bisagras 3x3 funcionan correctamente?": null,
+                    "¿La cerradura funciona bien?": null,
+                    "¿La celosia está bien instalada?": null,
+                    "¿El tope de puerta está instalado?": null,
+                    "¿El burlete esta bien instalado?": null,    
                 },
                 "15. Enchufes - Interruptores": {
-                    "¿Los enchufes e interruptores funcionan?": null
+                    "¿Los enchufes funcionan bien?": null,
+                    "¿Los interruptores operan bien?": null,
                 },
                 "16. Centro de Luz": {
-                    "¿El centro de luz funciona?": null
+                    "¿El centro de luz funciona?": null,
+                    "¿las Tapa ciegas estan correctamente instaladas?": null,
                 },
                 "17. Tablero Eléctrico": {
                     "¿El tablero eléctrico está correcto?": null
@@ -230,8 +203,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             },
             "D. TERRAZA": {
-                "01. Viga": {
-                    "¿La viga está en buen estado?": null
+                "01. Muro": {
+                    "¿El muro esta en buen estado?": null
                 },
                 "02. Tabiquería": {
                     "¿La tabiquería está correcta?": null
@@ -242,17 +215,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 "04. Cerámica Piso": {
                     "¿El piso cerámico está bien instalado?": null
                 },
-                "05. Gargolas": {
-                    "¿Las gárgolas funcionan correctamente?": null
+                "16. Centro de Luz": {
+                    "¿El centro de luz funciona?": null,
+                    "¿las Tapa ciegas estan correctamente instaladas?": null,
                 },
-                "06. Medicaña": {
-                    "¿La medicaña está bien instalada?": null
-                },
-                "07. Pintura Cielo - Muro": {
+                "07. Pintura Muro": {
                     "¿La pintura está bien aplicada?": null
                 },
                 "08. Baranda": {
                     "¿La baranda está bien instalada y segura?": null
+                },
+                "18. Limpieza": {
+                    "¿El área está limpia?": null
+                },
+                "19. Otros": {
+                    "¿Hay otros aspectos a señalar?": null
                 }
             },
             "E. BAÑO": {
@@ -272,34 +249,26 @@ document.addEventListener("DOMContentLoaded", function() {
                     "¿La pintura está bien aplicada?": null
                 },
                 "06. Cerámica - Frague Muro": {
-                    "¿Las cerámicas están bien instaladas?": null
+                    "¿Las cerámicas están correctamente instaladas?": null,
+                    "¿El fragüe es uniforme y completo?": null,
                 },
                 "07. Cerámica - Frague Piso": {
-                    "¿El piso cerámico está bien instalado?": null
+                    "¿Las cerámicas del piso están bien instaladas?": null,
+                    "¿El fragüe es uniforme y sin faltantes?": null,
                 },
-                "08. Ventana - Sello 80x50": {
-                    "¿La ventana está bien sellada?": null
-                },
-                "09. Puerta 70 Con Celosia": {
-                    "¿La puerta funciona correctamente?": null
-                },
-                "10. Marco": {
-                    "¿El marco está bien instalado?": null
-                },
-                "11. Pintura Puerta - Marco": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "12. Bisagra 3x3": {
-                    "¿Las bisagras funcionan bien?": null
-                },
-                "13. Cerradura": {
-                    "¿La cerradura funciona correctamente?": null
-                },
-                "14. Tope Puerta": {
-                    "¿El tope está instalado?": null
+                "09. Puerta y marco": {
+                    "¿La puerta con celosia funciona correctamente?": null,
+                    "¿El marco está bien instalado?": null,
+                    "¿La pintura de la puerta está bien aplicada?": null,
+                    "¿Las bisagras 3x3 funcionan correctamente?": null,
+                    "¿La cerradura funciona bien?": null,
+                    "¿La celosia está bien instalada?": null,
+                    "¿El tope de puerta está instalado?": null,
+                    "¿El burlete esta bien instalado?": null,
                 },
                 "15. Enchufe - Interruptor": {
-                    "¿Los enchufes e interruptores funcionan?": null
+                    "¿Los enchufes funcionan?": null,
+                    "¿Los interruptores operan bien?": null,
                 },
                 "16. Centro de Luz": {
                     "¿El centro de luz funciona?": null
@@ -307,29 +276,25 @@ document.addEventListener("DOMContentLoaded", function() {
                 "17. Extractor": {
                     "¿El extractor funciona correctamente?": null
                 },
-                "18. Tina - Sellos": {
-                    "¿La tina está bien sellada?": null
+                "18. Tina": {
+                    "¿La tina está bien sellada?": null,
+                    "¿esta bien instalada la celosia?": null,
+                    "¿La grifería funciona sin fugas?": null,
                 },
-                "19. Grifería Tina": {
-                    "¿La grifería funciona sin fugas?": null
+                "20. WC": {
+                    "¿El WC está bien sellado?": null,
+                    "¿La llave angular funciona?": null,
                 },
-                "20. WC - Sellos": {
-                    "¿El WC está bien sellado?": null
-                },
-                "21. Llave angular WC": {
-                    "¿La llave angular funciona?": null
-                },
-                "22. Lavamanos - Sello": {
-                    "¿El lavamanos está bien sellado?": null
+                "22. Lavamanos": {
+                    "¿El lavamanos está bien sellado?": null,
+                    "¿La llave de corte funciona?": null,
+                    "¿La grifería funciona sin fugas?": null,
                 },
                 "23. Accesorios - Toallero - Jabonera - Porta Papel": {
                     "¿Los accesorios están bien instalados?": null
                 },
                 "24. Celosia": {
                     "¿La celosía funciona correctamente?": null
-                },
-                "25. Llave de Corte": {
-                    "¿La llave de corte funciona?": null
                 },
                 "26. Limpieza": {
                     "¿El baño está completamente limpio?": null
@@ -354,32 +319,22 @@ document.addEventListener("DOMContentLoaded", function() {
                 "05. Corniza": {
                     "¿La corniza está bien instalada?": null
                 },
-                "06. Ventana - Sello 140x180": {
+                "06. Ventana": {
                     "¿La ventana está bien sellada?": null
                 },
-                "07. Alféizar": {
-                    "¿El alféizar está bien instalado?": null
-                },
-                "08. Puerta 70": {
-                    "¿La puerta funciona correctamente?": null
-                },
-                "09. Marco": {
-                    "¿El marco está bien instalado?": null
-                },
-                "10. Bisagra 3x3": {
-                    "¿Las bisagras funcionan bien?": null
-                },
-                "11. Cerradura": {
-                    "¿La cerradura funciona correctamente?": null
-                },
-                "12. Tope Puerta": {
-                    "¿El tope está instalado?": null
+                "09. Puerta y marco": {
+                    "¿La puerta funciona correctamente?": null,
+                    "¿El marco está bien instalado?": null,
+                    "¿Las bisagras 3x3 funcionan correctamente?": null,
+                    "¿La cerradura funciona bien?": null,
+                    "¿El tope de puerta está instalado?": null,
                 },
                 "13. Ventilación Jonas": {
                     "¿La ventilación funciona correctamente?": null
                 },
                 "14. Enchufes - Interruptor": {
-                    "¿Los enchufes e interruptores funcionan?": null
+                    "¿Los enchufes funcionan?": null,
+                    "¿Los interruptores operan bien?": null,
                 },
                 "15. Centro de Luz": {
                     "¿El centro de luz funciona?": null
@@ -889,6 +844,9 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Cerrar modal
             bootstrap.Modal.getInstance(document.getElementById("modalNo")).hide();
+            
+            // Mostrar confirmación
+            alert("Observación guardada con éxito.");
         },
         
         guardarAvance: function() {
