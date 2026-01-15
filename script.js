@@ -709,13 +709,15 @@ document.addEventListener("DOMContentLoaded", function() {
             
             this.guardarAvance();
             
-            // Usar un alert bloqueante para garantizar el feedback
-            alert(`✓ Observación guardada con ${this.imagenesTemporales.length} imagen(es)`);
+            // Mostrar notificación personalizada no bloqueante
+            this.mostrarNotificacion(`✓ Observación guardada con ${this.imagenesTemporales.length} imagen(es)`, "success");
             
-            // Ocultar el modal de forma fiable
-            if (this.modalNoInstance) {
-                this.modalNoInstance.hide();
-            }
+            // Ocultar el modal después de un retraso para permitir la lectura del mensaje
+            setTimeout(() => {
+                if (this.modalNoInstance) {
+                    this.modalNoInstance.hide();
+                }
+            }, 2000);
         },
         
         guardarAvance: function() {
