@@ -6,17 +6,12 @@ document.addEventListener("DOMContentLoaded", function() {
         departamentoActual: null,
         dormitorioActual: 1,
         preguntaActual: null,
-        dibujando: false,
         observaciones: [],
-        streamCamara: null,
-        zoomLevel: 1,
-        panning: false,
-        startX: 0,
-        startY: 0,
-        offsetX: 0,
-        offsetY: 0,
-        imagenActual: null,
-        planosPorDepartamento: {},
+        imagenesTemporales: [],
+        modalNoInstance: null,
+        
+        // ============================================
+        // AQUÍ VA TU ESTRUCTURA DE PREGUNTAS
         
         // Estructura de preguntas anidadas
         estructura: {
@@ -351,6 +346,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 "02. Comentarios finales": null
             }
         },
+        // ============================================
         
         init: function() {
             this.setupEventListeners();
@@ -368,47 +364,6 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("fotoInput").addEventListener("change", (e) => this.cargarImagen(e));
             document.getElementById("guardarObservacionBtn").addEventListener("click", () => this.guardarObservacion());
             
-            // Herramientas de dibujo
-            const canvas = document.getElementById("imagenCanvas");
-            const ctx = canvas.getContext("2d");
-            
-            document.getElementById("dibujarBtn").addEventListener("click", () => {
-                this.dibujando = true;
-                canvas.style.cursor = "crosshair";
-            });
-            
-            document.getElementById("borrarBtn").addEventListener("click", () => {
-                this.dibujando = false;
-                canvas.style.cursor = "default";
-            });
-            
-            document.getElementById("limpiarBtn").addEventListener("click", () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                if (this.imagenActual) {
-                    ctx.drawImage(this.imagenActual, 0, 0, canvas.width, canvas.height);
-                }
-            });
-            
-            // Zoom
-            document.getElementById("zoomInBtn").addEventListener("click", () => this.zoom(1.2));
-            document.getElementById("zoomOutBtn").addEventListener("click", () => this.zoom(0.8));
-            document.getElementById("resetZoomBtn").addEventListener("click", () => this.resetZoom());
-            
-            // Eventos de dibujo
-            canvas.addEventListener("mousedown", (e) => this.iniciarDibujo(e, canvas, ctx));
-            canvas.addEventListener("mousemove", (e) => this.dibujar(e, canvas, ctx));
-            canvas.addEventListener("mouseup", () => this.terminarDibujo());
-            canvas.addEventListener("mouseout", () => this.terminarDibujo());
-            canvas.addEventListener("wheel", (e) => {
-                e.preventDefault();
-                this.zoom(e.deltaY > 0 ? 0.8 : 1.2, e.offsetX, e.offsetY);
-            });
-            
-            // Eventos para pantalla táctil
-            canvas.addEventListener("touchstart", (e) => this.iniciarDibujoTouch(e, canvas, ctx));
-            canvas.addEventListener("touchmove", (e) => this.dibujarTouch(e, canvas, ctx));
-            canvas.addEventListener("touchend", () => this.terminarDibujo());
-            
             // Botones finales
             document.getElementById("otroDepartamentoBtn")?.addEventListener("click", () => this.prepararNuevoDepartamento());
             document.getElementById("finalizarInspeccion")?.addEventListener("click", () => this.generarPDF());
@@ -424,8 +379,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     e.preventDefault();
                     e.returnValue = "Tienes datos no guardados. ¿Estás seguro de querer salir?";
                 }
-
-            
             });
         },
         
@@ -437,21 +390,36 @@ document.addEventListener("DOMContentLoaded", function() {
             }, 3000);
         },
         
+        mostrarNotificacion: function(mensaje, tipo = "info") {
+            const alerta = document.getElementById("alertaExito");
+            alerta.className = `alert alert-${tipo}`;
+            
+            let icono = "✓";
+            if (tipo === "warning") icono = "⚠";
+            if (tipo === "danger") icono = "✗";
+            if (tipo === "info") icono = "ℹ";
+            
+            alerta.innerHTML = `${icono} ${mensaje}`;
+            alerta.style.display = "block";
+            
+            setTimeout(() => {
+                alerta.style.display = "none";
+            }, 3000);
+        },
+        
         iniciarInspeccion: function() {
             const numeroDepto = document.getElementById("numeroDepto").value;
             
             if (!numeroDepto) {
-                alert("Por favor ingresa un número de departamento");
+                this.mostrarNotificacion("Por favor ingresa un número de departamento", "warning");
                 return;
             }
             
-            // Validar si el departamento ya existe
             if (this.departamentos.some(depto => depto.numero === numeroDepto)) {
-                alert("Este departamento ya ha sido inspeccionado");
+                this.mostrarNotificacion("Este departamento ya ha sido inspeccionado", "warning");
                 return;
             }
                 
-            // Solo guardar datos generales si es el primer departamento
             if (this.departamentos.length === 0) {
                 this.datosGenerales = {
                     nombreObra: document.getElementById("nombreObra").value,
@@ -463,7 +431,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     cantidadDormitorios: parseInt(document.getElementById("cantidadDormitorios").value)
                 };
                 
-                // Bloquear campos de datos generales
                 document.getElementById("nombreObra").disabled = true;
                 document.getElementById("comuna").disabled = true;
                 document.getElementById("empresaContratista").disabled = true;
@@ -473,22 +440,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById("cantidadDormitorios").disabled = true;
             }
             
-            // Crear nuevo departamento
             this.departamentoActual = {
                 numero: numeroDepto,
                 dormitorios: [],
                 respuestas: {}
             };
             
-            // Mostrar preguntas
             this.mostrarPreguntas();
             
-            // Ocultar sección inicial y mostrar botón finalizar
             document.getElementById("datosGeneralesSection").style.display = "none";
             document.getElementById("selectorDeptoSection").style.display = "none";
             document.getElementById("finalizarContainer").style.display = "block";
             
-            // Guardar avance
             this.guardarAvance();
         },
         
@@ -496,20 +459,17 @@ document.addEventListener("DOMContentLoaded", function() {
             const contenedor = document.getElementById("seccionesPreguntas");
             contenedor.innerHTML = "";
             
-            // Título del departamento
             const tituloDepto = document.createElement("h2");
             tituloDepto.className = "my-4";
             tituloDepto.textContent = `Departamento: ${this.departamentoActual.numero}`;
             contenedor.appendChild(tituloDepto);
             
-            // Mostrar todas las secciones excepto dormitorios
             for (const [seccion, preguntas] of Object.entries(this.estructura)) {
                 if (seccion !== "F. DORMITORIO" && seccion !== "OBSERVACIONES GENERALES") {
                     this.crearSeccionPreguntas(contenedor, seccion, preguntas);
                 }
             }
             
-            // Mostrar dormitorios según cantidad
             for (let i = 1; i <= this.datosGenerales.cantidadDormitorios; i++) {
                 const dormitorioSection = document.createElement("div");
                 dormitorioSection.className = "section";
@@ -522,30 +482,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 contenedor.appendChild(dormitorioSection);
             }
             
-            // Mostrar observaciones generales
             this.crearSeccionPreguntas(contenedor, "OBSERVACIONES GENERALES", this.estructura["OBSERVACIONES GENERALES"]);
             
-            // Mostrar el contenedor de botones finales
             document.getElementById("finalizarContainer").style.display = "block";
         },
         
         prepararNuevoDepartamento: function() {
-            // Guardar departamento
             if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
                 this.departamentos.push({...this.departamentoActual});
             }
         
-            // Resetear interfaz
             document.getElementById("numeroDepto").value = "";
             document.getElementById("seccionesPreguntas").innerHTML = "";
             document.getElementById("finalizarContainer").style.display = "none";
             document.getElementById("datosGeneralesSection").style.display = "none";
             document.getElementById("selectorDeptoSection").style.display = "block";
         
-            // Guardar avance
             this.guardarAvance();
             
-            // Scroll y focus
             document.getElementById("selectorDeptoSection").scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
@@ -577,7 +531,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 preguntaDiv.appendChild(label);
                 
                 if (subpreguntas === null) {
-                    // Pregunta normal con select
                     const select = document.createElement("select");
                     select.className = "form-select respuesta";
                     select.dataset.pregunta = pregunta;
@@ -602,7 +555,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                     preguntaDiv.appendChild(select);
                 } else {
-                    // Contenedor de subpreguntas
                     const subContainer = document.createElement("div");
                     subContainer.className = "subpreguntas";
                     this.crearPreguntas(subContainer, subpreguntas, nivel + 1);
@@ -614,243 +566,159 @@ document.addEventListener("DOMContentLoaded", function() {
         },
         
         mostrarModalNo: function() {
-            // Resetear y preparar el modal completamente
             document.getElementById("descripcionProblema").value = "";
+            document.getElementById("alertaExito").style.display = "none";
+            this.imagenesTemporales = [];
             
-            // Configurar el área de imagen
-            const canvas = document.getElementById("imagenCanvas");
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("galeriaImagenes").style.display = "none";
+            document.getElementById("thumbnails").innerHTML = "";
+            this.actualizarContadorImagenes();
             
-            // Mostrar el área de preview de imagen
-            document.getElementById("photoPreview").style.display = "block";
-            
-            // Cargar plano existente si hay uno
-            this.cargarPlanoDepartamento();
-            
-            // Mostrar modal
-            const modal = new bootstrap.Modal(document.getElementById("modalNo"));
-            modal.show();
-            
-            // Enfocar el primer campo del modal
-            document.getElementById("descripcionProblema").focus();
-        },
-        
-        cargarPlanoDepartamento: function() {
-            const canvas = document.getElementById("imagenCanvas");
-            const ctx = canvas.getContext("2d");
-            
-            if (this.planosPorDepartamento[this.departamentoActual.numero]) {
-                const img = new Image();
-                img.onload = () => {
-                    // Ajustar tamaño manteniendo relación de aspecto
-                    const container = canvas.parentElement;
-                    const containerWidth = container.clientWidth;
-                    const containerHeight = container.clientHeight;
-                    const ratio = Math.min(
-                        containerWidth / img.width,
-                        containerHeight / img.height
-                    );
-                    
-                    canvas.width = img.width * ratio;
-                    canvas.height = img.height * ratio;
-                    
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    this.imagenActual = img;
-                };
-                img.src = this.planosPorDepartamento[this.departamentoActual.numero];
+            if (!this.modalNoInstance) {
+                this.modalNoInstance = new bootstrap.Modal(document.getElementById("modalNo"));
             }
+            this.modalNoInstance.show();
+            
+            setTimeout(() => {
+                document.getElementById("descripcionProblema").focus();
+            }, 300);
         },
         
         cargarImagen: function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Resetear el input para permitir cargar la misma imagen otra vez
             event.target.value = '';
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                const canvas = document.getElementById("imagenCanvas");
-                const ctx = canvas.getContext("2d");
-                const container = canvas.parentElement;
-                
-                this.imagenActual = new Image();
-                this.imagenActual.onload = () => {
-                    // Ajustar tamaño manteniendo relación de aspecto
-                    const containerWidth = container.clientWidth;
-                    const containerHeight = container.clientHeight;
-                    const ratio = Math.min(
-                        containerWidth / this.imagenActual.width,
-                        containerHeight / this.imagenActual.height
-                    );
-                    
-                    canvas.width = this.imagenActual.width * ratio;
-                    canvas.height = this.imagenActual.height * ratio;
-                    
-                    ctx.drawImage(this.imagenActual, 0, 0, canvas.width, canvas.height);
-                    
-                    document.getElementById("photoPreview").style.display = "block";
-                    this.resetZoom();
-                };
-                this.imagenActual.src = e.target.result;
+                // Agregar imagen directamente
+                this.imagenesTemporales.push(e.target.result);
+                this.actualizarGaleria();
+                this.mostrarNotificacion("Imagen agregada correctamente", "success");
             };
             reader.readAsDataURL(file);
         },
-
         
-    
-        
-        zoom: function(scaleFactor, pivotX, pivotY) {
-            const canvas = document.getElementById("imagenCanvas");
+        actualizarGaleria: function() {
+            const galeria = document.getElementById("galeriaImagenes");
+            const thumbnails = document.getElementById("thumbnails");
             
-            // Calcular nuevo zoom
-            this.zoomLevel *= scaleFactor;
-            this.zoomLevel = Math.max(0.5, Math.min(this.zoomLevel, 3)); // Limitar zoom
-            
-            // Ajustar offset para zoom centrado en posición del mouse
-            if (pivotX && pivotY) {
-                this.offsetX = pivotX - (pivotX - this.offsetX) * scaleFactor;
-                this.offsetY = pivotY - (pivotY - this.offsetY) * scaleFactor;
+            if (this.imagenesTemporales.length > 0) {
+                galeria.style.display = "block";
+                thumbnails.innerHTML = "";
+                
+                this.imagenesTemporales.forEach((img, index) => {
+                    const container = document.createElement("div");
+                    container.className = "thumbnail-container";
+                    
+                    const thumbnail = document.createElement("img");
+                    thumbnail.src = img;
+                    thumbnail.className = "thumbnail-img";
+                    thumbnail.title = "Click para ver en grande";
+                    thumbnail.onclick = () => this.verImagenGrande(img);
+                    
+                    const btnEliminar = document.createElement("button");
+                    btnEliminar.className = "btn-eliminar-img";
+                    btnEliminar.innerHTML = "×";
+                    btnEliminar.title = "Eliminar imagen";
+                    btnEliminar.onclick = (e) => {
+                        e.stopPropagation();
+                        this.eliminarImagenTemporal(index);
+                    };
+                    
+                    container.appendChild(thumbnail);
+                    container.appendChild(btnEliminar);
+                    thumbnails.appendChild(container);
+                });
+            } else {
+                galeria.style.display = "none";
             }
             
-            this.applyImageTransform();
+            this.actualizarContadorImagenes();
         },
         
-        resetZoom: function() {
-            this.zoomLevel = 1;
-            this.offsetX = 0;
-            this.offsetY = 0;
-            this.applyImageTransform();
+        actualizarContadorImagenes: function() {
+            const contador = document.getElementById("contadorImagenes");
+            contador.querySelector("strong").textContent = this.imagenesTemporales.length;
         },
         
-        applyImageTransform: function() {
-            const canvas = document.getElementById("imagenCanvas");
-            canvas.style.transform = `translate(${this.offsetX}px, ${this.offsetY}px) scale(${this.zoomLevel})`;
-        },
-        
-        iniciarDibujo: function(e, canvas, ctx) {
-            if (!this.dibujando) {
-                this.panning = true;
-                this.startX = e.offsetX;
-                this.startY = e.offsetY;
-                canvas.style.cursor = "grabbing";
-                return;
+        eliminarImagenTemporal: function(index) {
+            if (confirm("¿Deseas eliminar esta imagen?")) {
+                this.imagenesTemporales.splice(index, 1);
+                this.actualizarGaleria();
+                this.mostrarNotificacion("Imagen eliminada", "info");
             }
-            
-            this.dibujando = true;
-            this.ultimoX = e.offsetX / this.zoomLevel - this.offsetX / this.zoomLevel;
-            this.ultimoY = e.offsetY / this.zoomLevel - this.offsetY / this.zoomLevel;
-            
-            ctx.beginPath();
-            ctx.strokeStyle = document.getElementById("colorPicker").value;
-            ctx.lineWidth = 3 / this.zoomLevel;
-            ctx.lineJoin = "round";
-            ctx.lineCap = "round";
-            ctx.moveTo(this.ultimoX, this.ultimoY);
         },
         
-        dibujar: function(e, canvas, ctx) {
-            if (this.panning) {
-                this.offsetX += e.offsetX - this.startX;
-                this.offsetY += e.offsetY - this.startY;
-                this.startX = e.offsetX;
-                this.startY = e.offsetY;
-                this.applyImageTransform();
-                return;
-            }
+        verImagenGrande: function(imgSrc) {
+            const modalHTML = `
+                <div class="modal fade" id="modalImagenGrande" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Vista de imagen</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="${imgSrc}" style="max-width: 100%; height: auto;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            if (!this.dibujando) return;
+            const modalAnterior = document.getElementById("modalImagenGrande");
+            if (modalAnterior) modalAnterior.remove();
             
-            const x = e.offsetX / this.zoomLevel - this.offsetX / this.zoomLevel;
-            const y = e.offsetY / this.zoomLevel - this.offsetY / this.zoomLevel;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            const modal = new bootstrap.Modal(document.getElementById("modalImagenGrande"));
+            modal.show();
             
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            this.ultimoX = x;
-            this.ultimoY = y;
-        },
-        
-        terminarDibujo: function() {
-            this.dibujando = false;
-            this.panning = false;
-            const canvas = document.getElementById("imagenCanvas");
-            canvas.style.cursor = this.dibujando ? "crosshair" : "grab";
-        },
-        
-        iniciarDibujoTouch: function(e, canvas, ctx) {
-            if (!this.dibujando) return;
-            e.preventDefault();
-            
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            
-            this.ultimoX = (touch.clientX - rect.left) / this.zoomLevel - this.offsetX / this.zoomLevel;
-            this.ultimoY = (touch.clientY - rect.top) / this.zoomLevel - this.offsetY / this.zoomLevel;
-            
-            ctx.beginPath();
-            ctx.strokeStyle = document.getElementById("colorPicker").value;
-            ctx.lineWidth = 3 / this.zoomLevel;
-            ctx.lineJoin = "round";
-            ctx.lineCap = "round";
-            ctx.moveTo(this.ultimoX, this.ultimoY);
-        },
-        
-        dibujarTouch: function(e, canvas, ctx) {
-            if (!this.dibujando) return;
-            e.preventDefault();
-            
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = (touch.clientX - rect.left) / this.zoomLevel - this.offsetX / this.zoomLevel;
-            const y = (touch.clientY - rect.top) / this.zoomLevel - this.offsetY / this.zoomLevel;
-            
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            this.ultimoX = x;
-            this.ultimoY = y;
+            document.getElementById("modalImagenGrande").addEventListener('hidden.bs.modal', function () {
+                this.remove();
+            });
         },
         
         guardarObservacion: function() {
-            const descripcion = document.getElementById("descripcionProblema").value;
-            const canvas = document.getElementById("imagenCanvas");
+            const descripcion = document.getElementById("descripcionProblema").value.trim();
             
             if (!descripcion) {
-                alert("Por favor ingresa una descripción del problema");
+                this.mostrarNotificacion("Por favor ingresa una descripción del problema", "warning");
                 return;
             }
             
-            if (!this.imagenActual) {
-                alert("Por favor captura o sube una imagen del problema");
+            if (this.imagenesTemporales.length === 0) {
+                this.mostrarNotificacion("Por favor agrega al menos una imagen", "warning");
                 return;
             }
             
-            // Guardar imagen con anotaciones
-            const imagenConAnotaciones = canvas.toDataURL("image/png");
-            
-            // Guardar plano para este departamento
-            this.planosPorDepartamento[this.departamentoActual.numero] = imagenConAnotaciones;
-            
-            // Agregar a observaciones
-            this.observaciones.push({
+            // Crear observación con copia de las imágenes
+            const nuevaObservacion = {
                 departamento: this.departamentoActual.numero,
                 pregunta: this.preguntaActual,
                 descripcion: descripcion,
-                imagen: imagenConAnotaciones
-            });
+                imagenes: [...this.imagenesTemporales],
+                fecha: new Date().toISOString()
+            };
             
-            // Guardar avance
+            this.observaciones.push(nuevaObservacion);
+            
+            console.log("Observación guardada:", nuevaObservacion);
+            console.log("Total observaciones:", this.observaciones.length);
+            
             this.guardarAvance();
             
-            // Cerrar modal
-            bootstrap.Modal.getInstance(document.getElementById("modalNo")).hide();
+            // Usar un alert bloqueante para garantizar el feedback
+            alert(`✓ Observación guardada con ${this.imagenesTemporales.length} imagen(es)`);
             
-            // Mostrar confirmación
-            alert("Observación guardada con éxito.");
+            // Ocultar el modal de forma fiable
+            if (this.modalNoInstance) {
+                this.modalNoInstance.hide();
+            }
         },
         
         guardarAvance: function() {
-            // Asegurarnos de incluir el departamento actual
             if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
                 this.departamentos.push({...this.departamentoActual});
             }
@@ -859,12 +727,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 datosGenerales: this.datosGenerales,
                 departamentos: this.departamentos,
                 departamentoActual: this.departamentoActual,
-                observaciones: this.observaciones,
-                planosPorDepartamento: this.planosPorDepartamento
+                observaciones: this.observaciones
             };
-            localStorage.setItem('fiscalizacionObra', JSON.stringify(datos));
             
-            this.mostrarBadgeGuardado();
+            localStorage.setItem('fiscalizacionObra', JSON.stringify(datos));
+            console.log("Avance guardado. Observaciones:", this.observaciones.length);
         },
         
         cargarAvance: function() {
@@ -875,9 +742,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 this.departamentos = datos.departamentos || [];
                 this.departamentoActual = datos.departamentoActual || null;
                 this.observaciones = datos.observaciones || [];
-                this.planosPorDepartamento = datos.planosPorDepartamento || {};
                 
-                // Restaurar datos generales en el formulario
+                console.log("Avance cargado. Observaciones:", this.observaciones.length);
+                
                 if (this.datosGenerales.nombreObra) {
                     document.getElementById("nombreObra").value = this.datosGenerales.nombreObra;
                     document.getElementById("comuna").value = this.datosGenerales.comuna;
@@ -887,7 +754,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById("directorObra").value = this.datosGenerales.directorObra;
                     document.getElementById("cantidadDormitorios").value = this.datosGenerales.cantidadDormitorios;
                     
-                    // Bloquear campos de datos generales
                     document.getElementById("nombreObra").disabled = true;
                     document.getElementById("comuna").disabled = true;
                     document.getElementById("empresaContratista").disabled = true;
@@ -897,7 +763,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById("cantidadDormitorios").disabled = true;
                 }
                 
-                // Si hay departamento actual, cargar preguntas
                 if (this.departamentoActual) {
                     this.mostrarPreguntas();
                     document.getElementById("datosGeneralesSection").style.display = "none";
@@ -908,15 +773,12 @@ document.addEventListener("DOMContentLoaded", function() {
         },
         
         generarExcel: function() {
-            // Asegurarnos de incluir el departamento actual
             if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
                 this.departamentos.push({...this.departamentoActual});
             }
             
-            // Crear hoja de cálculo
             const wb = XLSX.utils.book_new();
             
-            // Hoja de datos generales
             const datosGenerales = [
                 ["Nombre de la Obra", this.datosGenerales.nombreObra],
                 ["Comuna", this.datosGenerales.comuna],
@@ -930,31 +792,25 @@ document.addEventListener("DOMContentLoaded", function() {
             const wsDatos = XLSX.utils.aoa_to_sheet(datosGenerales);
             XLSX.utils.book_append_sheet(wb, wsDatos, "Datos Generales");
             
-            // Hoja de respuestas
-            const respuestas = [["Departamento", "Sección", "Subsección", "Pregunta", "Respuesta", "Observación"]];
+            const respuestas = [["Departamento", "Sección", "Subsección", "Pregunta", "Respuesta", "Observación", "Cantidad Imágenes"]];
     
-            // Procesar todos los departamentos
             this.departamentos.forEach(depto => {
-                // Obtener todas las observaciones para este departamento
                 const obsDepto = this.observaciones.filter(obs => obs.departamento === depto.numero);
         
-                // Recorrer la estructura de preguntas para encontrar respuestas
                 for (const [seccion, subsecciones] of Object.entries(this.estructura)) {
                     this.procesarPreguntasParaExcel(respuestas, depto.numero, seccion, subsecciones, obsDepto);
                 }
             });
     
-                const wsRespuestas = XLSX.utils.aoa_to_sheet(respuestas);
-                XLSX.utils.book_append_sheet(wb, wsRespuestas, "Respuestas");
+            const wsRespuestas = XLSX.utils.aoa_to_sheet(respuestas);
+            XLSX.utils.book_append_sheet(wb, wsRespuestas, "Respuestas");
     
-                 // Generar archivo
-                XLSX.writeFile(wb, `Fiscalizacion_${this.datosGenerales.nombreObra.replace(/ /g, "_")}.xlsx`);
+            XLSX.writeFile(wb, `Fiscalizacion_${this.datosGenerales.nombreObra.replace(/ /g, "_")}.xlsx`);
         },
         
         procesarPreguntasParaExcel: function(respuestas, numeroDepto, seccion, items, obsDepto, subseccion = "") {
             for (const [item, preguntas] of Object.entries(items)) {
                 if (preguntas === null) {
-                    // Es una pregunta final
                     const observacion = obsDepto.find(obs => obs.pregunta === item);
                     
                     respuestas.push([
@@ -963,195 +819,165 @@ document.addEventListener("DOMContentLoaded", function() {
                         subseccion,
                         item,
                         observacion ? "No" : "Sí",
-                        observacion ? observacion.descripcion : ""
+                        observacion ? observacion.descripcion : "",
+                        observacion && observacion.imagenes ? observacion.imagenes.length : 0
                     ]);
                 } else {
-                    // Es una subsección, procesar recursivamente
-                    this.procesarPreguntasParaExcel(
-                        respuestas,
-                        numeroDepto,
-                        seccion,
-                        preguntas,
-                        obsDepto,
-                        item // Nueva subsección
-                    );
+                    this.procesarPreguntasParaExcel(respuestas, numeroDepto, seccion, preguntas, obsDepto, item);
                 }
             }
         },
         
         generarPDF: function() {
-            // 1. Asegurarnos de incluir el departamento actual
             if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
                 this.departamentos.push({...this.departamentoActual});
             }
+            
+            console.log("Generando PDF. Total observaciones:", this.observaciones.length);
         
-            // 2. Crear nuevo documento PDF
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
-            const margin = 8;
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
             
-            // 3. Encabezado y datos generales (solo en primera página)
             doc.setFontSize(18);
-            doc.text("Informe de Fiscalización de Obra", pageWidth / 2, 15, { align: "center" });
-            doc.setFontSize(12);
-            doc.text(`Obra: ${this.datosGenerales.nombreObra}`, margin, 25);
-            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, margin, 35);
+            doc.text("Informe de Fiscalización de Obra", pageWidth / 2, 20, { align: "center" });
             
-            doc.setFontSize(14);
-            doc.text("1. Datos Generales de la Obra", margin, 45);
-            doc.setFontSize(12);
-            doc.text(`- Nombre: ${this.datosGenerales.nombreObra}`, margin + 6, 55);
-            doc.text(`- Comuna: ${this.datosGenerales.comuna}`, margin + 6, 65);
-            doc.text(`- Contratista: ${this.datosGenerales.empresaContratista}`, margin + 6, 75);
-            doc.text(`- Patrocinante: ${this.datosGenerales.entidadPatrocinante}`, margin + 6, 85);
-            doc.text(`- Supervisor: ${this.datosGenerales.supervisor}`, margin + 6, 95);
-            doc.text(`- Director Obra: ${this.datosGenerales.directorObra}`, margin + 6, 105);
+            doc.setFontSize(11);
+            doc.text(`Obra: ${this.datosGenerales.nombreObra}`, margin, 35);
+            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, margin, 42);
+            
+            doc.setFontSize(13);
+            doc.text("Datos Generales", margin, 55);
+            doc.setFontSize(10);
+            doc.text(`Nombre: ${this.datosGenerales.nombreObra}`, margin + 5, 63);
+            doc.text(`Comuna: ${this.datosGenerales.comuna}`, margin + 5, 70);
+            doc.text(`Contratista: ${this.datosGenerales.empresaContratista}`, margin + 5, 77);
+            doc.text(`Patrocinante: ${this.datosGenerales.entidadPatrocinante}`, margin + 5, 84);
+            doc.text(`Supervisor: ${this.datosGenerales.supervisor}`, margin + 5, 91);
+            doc.text(`Director: ${this.datosGenerales.directorObra}`, margin + 5, 98);
         
-            // 4. Procesar todos los departamentos
-            let yPosition = 115;
-            const numerosVistos = new Set();
-        
-            // Ordenar departamentos por número (opcional)
+            let yPosition = 110;
             const deptosOrdenados = [...this.departamentos].sort((a, b) => a.numero.localeCompare(b.numero));
         
             deptosOrdenados.forEach(depto => {
-                if (!numerosVistos.has(depto.numero)) {
-                    numerosVistos.add(depto.numero);
+                const obsDepto = this.observaciones.filter(obs => obs.departamento === depto.numero);
+                
+                console.log(`Departamento ${depto.numero}: ${obsDepto.length} observaciones`);
+                
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
         
-                    // Nueva página si es necesario
-                    if (yPosition > 250) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text(`DEPARTAMENTO ${depto.numero}`, margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
         
-                    // Título del departamento
-                    doc.setFontSize(11);
-                    doc.setTextColor(0, 0, 0); // Negro
-                    doc.text(`DEPARTAMENTO ${depto.numero}:`, margin, yPosition);
-                    yPosition += 6;
+                if (obsDepto.length > 0) {
+                    const observacionesAgrupadas = this.agruparObservacionesPorJerarquia(obsDepto);
         
-                    // Filtrar observaciones de este departamento
-                    const obsDepto = this.observaciones.filter(obs => 
-                        obs.departamento === depto.numero
-                    );
+                    for (const [seccion, subsecciones] of Object.entries(observacionesAgrupadas)) {
+                        if (yPosition > 240) {
+                            doc.addPage();
+                            yPosition = margin;
+                        }
         
-                    if (obsDepto.length > 0) {
-                        // Agrupar observaciones por sección y subsección
-                        const observacionesAgrupadas = this.agruparObservacionesPorJerarquia(obsDepto);
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(seccion, margin, yPosition);
+                        yPosition += 7;
+                        doc.setFont(undefined, 'normal');
         
-                        // Procesar cada grupo
-                        for (const [seccion, subsecciones] of Object.entries(observacionesAgrupadas)) {
-                            // Nueva página si es necesario
-                            if (yPosition > 220) {
-                                doc.addPage();
-                                yPosition = margin;
+                        for (const [subseccion, preguntas] of Object.entries(subsecciones)) {
+                            if (subseccion && subseccion !== "null") {
+                                if (yPosition > 235) {
+                                    doc.addPage();
+                                    yPosition = margin;
+                                }
+        
+                                doc.setFontSize(10);
+                                doc.text(subseccion, margin + 5, yPosition);
+                                yPosition += 6;
                             }
         
-                            // Sección
-                            doc.setFontSize(11);
-                            doc.setTextColor(0, 0, 0); // negro
-                            doc.text(seccion, margin, yPosition);
-                            yPosition += 6;
-        
-                            for (const [subseccion, preguntas] of Object.entries(subsecciones)) {
-                                // Subsección (si existe)
-                                if (subseccion && subseccion !== "null") {
-                                    if (yPosition > 240) {
+                            for (const [pregunta, observaciones] of Object.entries(preguntas)) {
+                                observaciones.forEach(obs => {
+                                    if (yPosition > 230) {
                                         doc.addPage();
                                         yPosition = margin;
                                     }
         
-                                    doc.setFontSize(11);
-                                    doc.setTextColor(0, 0, 0); // negro oscuro
-                                    doc.text(subseccion, margin, yPosition);
-                                    yPosition += 6;
-                                }
+                                    doc.setFontSize(10);
+                                    const preguntaLines = doc.splitTextToSize(pregunta, pageWidth - margin * 2 - 10);
+                                    doc.text(preguntaLines, margin + 10, yPosition);
+                                    yPosition += 6 * preguntaLines.length;
         
-                                // Preguntas y observaciones
-                                for (const [pregunta, observaciones] of Object.entries(preguntas)) {
-                                    observaciones.forEach(obs => {
-                                        if (yPosition > 240) {
-                                            doc.addPage();
-                                            yPosition = margin;
-                                        }
+                                    doc.setFontSize(9);
+                                    const descripcionLines = doc.splitTextToSize(`Observación: ${obs.descripcion}`, pageWidth - margin * 2 - 15);
+                                    doc.text(descripcionLines, margin + 15, yPosition);
+                                    yPosition += 5 * descripcionLines.length + 3;
         
-                                        // Pregunta
-                                        doc.setFontSize(11);
-                                        doc.setTextColor(0, 0, 0); // Negro
-                                        doc.text(`${pregunta}`, margin, yPosition);
-                                        yPosition += 6;
-        
-                                        // Observación
-                                        doc.setFontSize(11);
-                                        doc.setTextColor(0, 0, 0); // Rojo oscuro
-                                        const descripcionLines = doc.splitTextToSize(`    Observación: ${obs.descripcion}`, pageWidth - margin * 2 - (subseccion ? 40 : 30));
-                                        doc.text(descripcionLines, margin, yPosition);
-                                        yPosition += 6 * descripcionLines.length;
-        
-                                        // Imagen
-                                        try {
-                                            //if (yPosition > 150) { // Si no hay espacio para la imagen
-                                                //doc.addPage();
-                                                //yPosition = margin;
-                                            //}
-        
-                                            const imgWidth = (pageWidth - margin * 2) / 1.5;
-                                            const imgHeight = imgWidth * 0.75; // Relación 4:3
-                                            const espacioNecesario = imgHeight + 20; // Altura + margen
+                                    if (obs.imagenes && obs.imagenes.length > 0) {
+                                        obs.imagenes.forEach((imagen, imgIndex) => {
+                                            try {
+                                                const imgWidth = (pageWidth - margin * 2) * 0.7;
+                                                const imgHeight = imgWidth * 0.75;
+                                                const espacioNecesario = imgHeight + 20;
 
-                                            // Verificar si hay espacio suficiente en la página actual
-                                            if (yPosition + espacioNecesario > doc.internal.pageSize.getHeight() - margin) {
-                                                doc.addPage();
-                                                yPosition = margin;
+                                                if (yPosition + espacioNecesario > pageHeight - margin) {
+                                                    doc.addPage();
+                                                    yPosition = margin;
+                                                }
+                                                
+                                                if (obs.imagenes.length > 1) {
+                                                    doc.setFontSize(8);
+                                                    doc.setTextColor(100, 100, 100);
+                                                    doc.text(`Imagen ${imgIndex + 1} de ${obs.imagenes.length}`, margin + 15, yPosition);
+                                                    yPosition += 5;
+                                                }
+
+                                                doc.addImage(imagen, "JPEG", 
+                                                    (pageWidth - imgWidth) / 2,
+                                                    yPosition, 
+                                                    imgWidth, 
+                                                    imgHeight);
+                                                
+                                                yPosition += imgHeight + 8;
+                                                doc.setTextColor(0, 0, 0);
+                                            } catch (e) {
+                                                console.error("Error al agregar imagen:", e);
+                                                doc.text("(Imagen no disponible)", margin + 15, yPosition);
+                                                yPosition += 6;
                                             }
-
-                                            
-                                            doc.addImage(obs.imagen, "PNG", 
-                                                (pageWidth - imgWidth) / 2, // Centrado horizontal
-                                                yPosition, 
-                                                imgWidth, 
-                                                imgHeight);
-                                            
-                                            yPosition += imgHeight + 10;
-                                        } catch (e) {
-                                            console.error("Error al agregar imagen:", e);
-                                            doc.setTextColor(0, 0, 0);
-                                            doc.text("(Imagen no disponible)", margin + (subseccion ? 40 : 30), yPosition);
-                                            yPosition += 8;
-                                        }
+                                        });
+                                    }
         
-                                        yPosition += 10; // Espacio entre observaciones
-                                    });
-                                }
+                                    yPosition += 8;
+                                });
                             }
                         }
-                    } else {
-                        doc.setFontSize(12);
-                        doc.setTextColor(0, 0, 0);
-                        doc.text("No se registraron observaciones", margin + 10, yPosition);
-                        yPosition += 8;
                     }
-                    
-                    yPosition += 10; // Espacio entre departamentos
+                } else {
+                    doc.setFontSize(10);
+                    doc.text("Sin observaciones", margin + 10, yPosition);
+                    yPosition += 8;
                 }
+                
+                yPosition += 10;
             });
         
-            // 5. Guardar PDF
             doc.save(`Informe_Fiscalizacion_${this.datosGenerales.nombreObra.replace(/ /g, "_")}.pdf`);
-            
-            // Generar Excel automáticamente
             this.generarExcel();
-            
-            // 6. Resetear aplicación
             this.resetearAplicacion();
         },
         
-        // Nueva función para agrupar observaciones por jerarquía
         agruparObservacionesPorJerarquia: function(observaciones) {
             const agrupadas = {};
             
             observaciones.forEach(obs => {
-                // Buscar en la estructura la jerarquía completa de la pregunta
                 const jerarquia = this.encontrarJerarquiaDePregunta(obs.pregunta);
                 
                 if (jerarquia) {
@@ -1178,36 +1004,29 @@ document.addEventListener("DOMContentLoaded", function() {
             return agrupadas;
         },
         
-        // Nueva función para encontrar la jerarquía de una pregunta
         encontrarJerarquiaDePregunta: function(preguntaBuscada) {
             for (const [seccion, subsecciones] of Object.entries(this.estructura)) {
                 for (const [subseccion, preguntas] of Object.entries(subsecciones)) {
                     if (typeof preguntas === 'object' && preguntas !== null) {
-                        // Es un objeto de preguntas
                         for (const [pregunta] of Object.entries(preguntas)) {
                             if (pregunta === preguntaBuscada) {
                                 return [seccion, subseccion];
                             }
                         }
                     } else if (subseccion === preguntaBuscada) {
-                        // Es una pregunta directa
                         return [seccion, null];
                     }
                 }
             }
             return null;
         },
-
-        
         
         resetearAplicacion: function() {
             this.datosGenerales = {};
             this.departamentos = [];
             this.departamentoActual = null;
             this.observaciones = [];
-            this.planosPorDepartamento = {};
             
-            // Resetear formularios
             document.getElementById("nombreObra").value = "";
             document.getElementById("comuna").value = "";
             document.getElementById("empresaContratista").value = "";
@@ -1216,7 +1035,6 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("directorObra").value = "";
             document.getElementById("numeroDepto").value = "";
             
-            // Habilitar campos de datos generales
             document.getElementById("nombreObra").disabled = false;
             document.getElementById("comuna").disabled = false;
             document.getElementById("empresaContratista").disabled = false;
@@ -1225,16 +1043,13 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("directorObra").disabled = false;
             document.getElementById("cantidadDormitorios").disabled = false;
             
-            // Mostrar secciones iniciales
             document.getElementById("datosGeneralesSection").style.display = "block";
             document.getElementById("selectorDeptoSection").style.display = "block";
             document.getElementById("seccionesPreguntas").innerHTML = "";
             document.getElementById("finalizarContainer").style.display = "none";
 
-            // Limpiar localStorage
             localStorage.removeItem('fiscalizacionObra');
             
-            // Scroll al inicio
             window.scrollTo(0, 0);
         }
 
