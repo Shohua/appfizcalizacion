@@ -10,24 +10,6 @@
         .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
         .question { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .subquestion { margin-left: 20px; }
-        .canvas-container { 
-            margin: 10px 0; 
-            border: 1px solid #ccc; 
-            position: relative; 
-            width: 100%; 
-            height: 400px;
-            overflow: hidden;
-        }
-        .drawing-canvas { 
-            background-color: #f5f5f5; 
-            touch-action: none; 
-            position: absolute;
-            transform-origin: 0 0;
-        }
-        .draw-tools { margin-bottom: 10px; }
-        #cameraView { margin-top: 10px; }
-        #photoPreview { display: none; }
-        .nav-buttons { margin-top: 20px; }
         .form-control:disabled { background-color: #e9ecef; }
         .saved-badge {
             position: fixed;
@@ -35,6 +17,66 @@
             right: 20px;
             z-index: 1000;
             display: none;
+        }
+        .thumbnail-container {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+        .thumbnail-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .thumbnail-img:hover {
+            border-color: #007bff;
+            transform: scale(1.05);
+        }
+        .btn-eliminar-img {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #dc3545;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .btn-eliminar-img:hover {
+            background: #c82333;
+        }
+        #alertaExito {
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -104,14 +146,14 @@
 
         <!-- Botones Finales -->
         <div class="text-center mt-4 mb-5" id="finalizarContainer" style="display: none;">
-            <button class="btn btn-info me-2" id="guardarAvanceBtn">Guardar Avance</button>
-            <button class="btn btn-success me-2" id="generarExcelBtn">Generar Excel</button>
-            <button class="btn btn-secondary me-3" id="otroDepartamentoBtn">Inspeccionar Otro Departamento</button>
-            <button class="btn btn-primary" id="finalizarInspeccion">Finalizar Inspección y Generar PDF</button>
+            <button class="btn btn-info me-2" id="guardarAvanceBtn">💾 Guardar Avance</button>
+            <button class="btn btn-success me-2" id="generarExcelBtn">📊 Generar Excel</button>
+            <button class="btn btn-secondary me-3" id="otroDepartamentoBtn">🏢 Inspeccionar Otro Departamento</button>
+            <button class="btn btn-primary" id="finalizarInspeccion">📄 Finalizar Inspección y Generar PDF</button>
         </div>
 
         <!-- Badge de guardado -->
-        <div class="alert alert-success saved-badge" id="savedBadge">Avance guardado</div>
+        <div class="alert alert-success saved-badge" id="savedBadge">✓ Avance guardado</div>
     </div>
 
     <!-- Modal para respuestas "No" -->
@@ -123,39 +165,46 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Descripción del problema:</label>
-                        <textarea class="form-control" id="descripcionProblema" rows="3"></textarea>
+                    <!-- Alerta de éxito -->
+                    <div class="alert alert-success" id="alertaExito" style="display: none;">
+                        ✓ Observación guardada exitosamente
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Subir imagen o tomar foto:</label>
-                        <div class="btn-group w-100">
-                            <button class="btn btn-outline-secondary" id="subirImagenBtn">Subir Imagen</button>
-                            <button class="btn btn-outline-secondary" id="tomarFotoBtn">Tomar Foto</button>
+                        <label class="form-label fw-bold">Descripción del problema:</label>
+                        <textarea class="form-control" id="descripcionProblema" rows="3" placeholder="Describe el problema encontrado..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Agregar imágenes:</label>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" id="subirImagenBtn">
+                                📁 Subir Imagen desde Archivo
+                            </button>
+                            <button class="btn btn-outline-secondary" id="tomarFotoBtn">
+                                📷 Tomar Foto con Cámara
+                            </button>
                         </div>
                         <input type="file" id="imagenInput" accept="image/*" style="display: none;">
                         <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display: none;">
+                        
+                        <!-- Contador de imágenes -->
+                        <div class="alert alert-info mt-3 mb-0" id="contadorImagenes">
+                            📸 Imágenes agregadas: <strong>0</strong>
+                        </div>
                     </div>
                     
-                    <div id="photoPreview" class="mt-3">
-                        <div class="canvas-container">
-                            <canvas id="imagenCanvas" class="drawing-canvas"></canvas>
-                        </div>
-                        <div class="draw-tools">
-                            <button class="btn btn-sm btn-outline-primary" id="dibujarBtn">✏️ Dibujar</button>
-                            <button class="btn btn-sm btn-outline-secondary" id="borrarBtn">🧽 Borrar</button>
-                            <button class="btn btn-sm btn-outline-danger" id="limpiarBtn">🗑️ Limpiar</button>
-                            <button class="btn btn-sm btn-outline-info" id="zoomInBtn">🔍➕</button>
-                            <button class="btn btn-sm btn-outline-info" id="zoomOutBtn">🔍➖</button>
-                            <button class="btn btn-sm btn-outline-warning" id="resetZoomBtn">🔄</button>
-                            <input type="color" id="colorPicker" value="#ff0000">
-                        </div>
+                    <!-- Galería de imágenes -->
+                    <div id="galeriaImagenes" class="mb-3" style="display: none;">
+                        <label class="form-label fw-bold">Imágenes de esta observación:</label>
+                        <div id="thumbnails" class="d-flex flex-wrap"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="guardarObservacionBtn">Guardar Observación</button>
+                    <button type="button" class="btn btn-primary" id="guardarObservacionBtn">
+                        ✓ Guardar Observación
+                    </button>
                 </div>
             </div>
         </div>
