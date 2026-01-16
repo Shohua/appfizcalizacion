@@ -680,20 +680,19 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         },
         
-        guardarObservacion: function() {
+        guardarObservacion: function () {
             const descripcion = document.getElementById("descripcionProblema").value.trim();
-            
+
             if (!descripcion) {
                 this.mostrarNotificacion("Por favor ingresa una descripción del problema", "warning");
                 return;
             }
-            
+
             if (this.imagenesTemporales.length === 0) {
                 this.mostrarNotificacion("Por favor agrega al menos una imagen", "warning");
                 return;
             }
-            
-            // Crear observación con copia de las imágenes
+
             const nuevaObservacion = {
                 departamento: this.departamentoActual.numero,
                 pregunta: this.preguntaActual,
@@ -701,40 +700,64 @@ document.addEventListener("DOMContentLoaded", function() {
                 imagenes: [...this.imagenesTemporales],
                 fecha: new Date().toISOString()
             };
-            
+
             this.observaciones.push(nuevaObservacion);
-            
+
             console.log("Observación guardada:", nuevaObservacion);
             console.log("Total observaciones:", this.observaciones.length);
-            
-            this.guardarAvance();
-            
-            // Mostrar notificación personalizada no bloqueante
-            this.mostrarNotificacion(`✓ Observación guardada con ${this.imagenesTemporales.length} imagen(es)`, "success");
-            
-            // Ocultar el modal después de un retraso para permitir la lectura del mensaje
-            setTimeout(() => {
-                if (this.modalNoInstance) {
-                    this.modalNoInstance.hide();
-                }
-            }, 2000);
-        },
-        
-        guardarAvance: function() {
-            if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
-                this.departamentos.push({...this.departamentoActual});
+
+            // 🔒 INTENTAR guardar, pero sin romper el flujo
+            try {
+                this.guardarAvance();
+            } catch (e) {
+                console.warn("Guardado parcial, continuando flujo");
             }
-            
-            const datos = {
-                datosGenerales: this.datosGenerales,
-                departamentos: this.departamentos,
-                departamentoActual: this.departamentoActual,
-                observaciones: this.observaciones
-            };
-            
-            localStorage.setItem('fiscalizacionObra', JSON.stringify(datos));
-            console.log("Avance guardado. Observaciones:", this.observaciones.length);
+
+            // ✅ LIMPIAR ESTADO
+            this.imagenesTemporales = [];
+            document.getElementById("descripcionProblema").value = "";
+
+            // ✅ CERRAR MODAL INMEDIATAMENTE
+            if (this.modalNoInstance) {
+                this.modalNoInstance.hide();
+            }
+
+            // ✅ NOTIFICACIÓN
+            this.mostrarNotificacion(
+                `✓ Observación guardada (${nuevaObservacion.imagenes.length} imagen(es))`,
+                "success"
+            );
         },
+
+        
+        guardarAvance: function () {
+            try {
+                if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
+                    this.departamentos.push({ ...this.departamentoActual });
+                }
+
+                const datos = {
+                    datosGenerales: this.datosGenerales,
+                    departamentos: this.departamentos,
+                    departamentoActual: this.departamentoActual,
+                    observaciones: this.observaciones
+                };
+
+                localStorage.setItem('fiscalizacionObra', JSON.stringify(datos));
+                console.log("Avance guardado. Observaciones:", this.observaciones.length);
+
+            } catch (error) {
+                console.error("Error guardando en localStorage:", error);
+
+                if (error.name === "QuotaExceededError") {
+                    this.mostrarNotificacion(
+                        "⚠️ Almacenamiento lleno. Las observaciones siguen en memoria y se incluirán en el PDF.",
+                        "warning"
+                    );
+                }
+            }
+        },
+
         
         cargarAvance: function() {
             const datosGuardados = localStorage.getItem('fiscalizacionObra');
