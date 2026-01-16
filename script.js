@@ -595,7 +595,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 // Agregar imagen directamente
                 this.imagenesTemporales.push(e.target.result);
                 this.actualizarGaleria();
-                this.mostrarNotificacion("Imagen agregada correctamente", "success");
+                //this.mostrarNotificacion("Imagen agregada correctamente", "success");
             };
             reader.readAsDataURL(file);
         },
@@ -1082,3 +1082,4 @@ document.addEventListener("DOMContentLoaded", function() {
     
     app.init();
 });
+
