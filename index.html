@@ -6,44 +6,73 @@
     <title>Fiscalizador de Obras</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { padding: 20px; font-family: Arial, sans-serif; }
-        .section { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
-        .question { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .subquestion { margin-left: 20px; }
-        .form-control:disabled { background-color: #e9ecef; }
+        body { padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; }
+        .section { 
+            margin-bottom: 25px; 
+            border: 1px solid #dee2e6; 
+            padding: 20px; 
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h3 { 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+        .question { 
+            margin-bottom: 18px; 
+            padding-bottom: 18px; 
+            border-bottom: 1px solid #ecf0f1; 
+        }
+        .question:last-child { border-bottom: none; }
+        .subquestion { margin-left: 25px; }
+        .form-control:disabled, .form-select:disabled { 
+            background-color: #f8f9fa; 
+            opacity: 0.7;
+        }
         .saved-badge {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
             display: none;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(10px); }
         }
         .thumbnail-container {
             position: relative;
             display: inline-block;
-            margin: 5px;
+            margin: 8px;
+            transition: transform 0.2s;
         }
         .thumbnail-img {
             width: 120px;
             height: 120px;
             object-fit: cover;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
         }
         .thumbnail-img:hover {
-            border-color: #007bff;
+            border-color: #3498db;
             transform: scale(1.05);
         }
         .btn-eliminar-img {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -10px;
+            right: -10px;
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: #dc3545;
+            background: #e74c3c;
             color: white;
             border: 2px solid white;
             cursor: pointer;
@@ -54,66 +83,166 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .btn-eliminar-img:hover {
-            background: #c82333;
+            background: #c0392b;
+            transform: scale(1.1);
         }
-        #alertaExito {
-            animation: slideDown 0.3s ease-out;
+        .card-header {
+            font-weight: 600;
+            font-size: 1.1rem;
         }
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .progress {
+            height: 8px;
+            margin-bottom: 20px;
         }
-        .preview-image {
+        #contadorImagenes {
+            font-size: 0.9rem;
+        }
+        .modal-content {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .modal-header {
+            background: #3498db;
+            color: white;
+        }
+        .btn-primary {
+            background: #3498db;
+            border-color: #3498db;
+        }
+        .btn-primary:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+        .btn-success {
+            background: #27ae60;
+            border-color: #27ae60;
+        }
+        .btn-info {
+            background: #17a2b8;
+            border-color: #17a2b8;
+        }
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        .pregunta-texto {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        .badge-seccion {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+        }
+        .badge-subseccion {
+            background: #95a5a6;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        .imagen-preview {
             max-width: 100%;
             height: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .depto-titulo {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .depto-titulo h2 {
+            margin: 0;
+            font-weight: 600;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Cargando preguntas...</p>
+    </div>
+
     <div class="container">
-        <h1 class="text-center my-4">Fiscalización de Obra</h1>
+        <h1 class="text-center my-4">📋 Fiscalización de Obra</h1>
         
         <!-- Sección de Antecedentes Generales -->
         <div class="card mb-4" id="datosGeneralesSection">
-            <div class="card-header bg-primary text-white">Antecedentes Generales de la Obra</div>
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-building"></i> Antecedentes Generales de la Obra
+            </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Nombre de la Obra:</label>
+                            <label class="form-label fw-semibold">Nombre de la Obra:</label>
                             <input type="text" class="form-control" id="nombreObra" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Comuna:</label>
+                            <label class="form-label fw-semibold">Comuna:</label>
                             <input type="text" class="form-control" id="comuna" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Empresa Contratista:</label>
+                            <label class="form-label fw-semibold">Empresa Contratista:</label>
                             <input type="text" class="form-control" id="empresaContratista" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label">Entidad Patrocinante:</label>
+                            <label class="form-label fw-semibold">Entidad Patrocinante:</label>
                             <input type="text" class="form-control" id="entidadPatrocinante" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Supervisor - FTO SERVIU:</label>
+                            <label class="form-label fw-semibold">Supervisor - FTO SERVIU:</label>
                             <input type="text" class="form-control" id="supervisor" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Director de Obra:</label>
+                            <label class="form-label fw-semibold">Director de Obra:</label>
                             <input type="text" class="form-control" id="directorObra" required>
                         </div>
                     </div>
@@ -123,22 +252,42 @@
 
         <!-- Selector de Departamento -->
         <div class="card mb-4" id="selectorDeptoSection">
-            <div class="card-header bg-primary text-white">Departamento</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Número de Departamento:</label>
-                    <input type="text" class="form-control" id="numeroDepto" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Cantidad de Dormitorios:</label>
-                    <select class="form-select" id="cantidadDormitorios">
-                        <option value="1">1 Dormitorio</option>
-                        <option value="2">2 Dormitorios</option>
-                        <option value="3">3 Dormitorios</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" id="iniciarInspeccion">Iniciar Inspección</button>
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-door-closed"></i> Departamento
             </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Número de Departamento:</label>
+                            <input type="text" class="form-control" id="numeroDepto" placeholder="Ej: 101, A-2" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Cantidad de Dormitorios:</label>
+                            <select class="form-select" id="cantidadDormitorios">
+                                <option value="1">1 Dormitorio</option>
+                                <option value="2">2 Dormitorios</option>
+                                <option value="3">3 Dormitorios</option>
+                                <option value="4">4 Dormitorios</option>
+                                <option value="5">5 Dormitorios</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary btn-lg" id="iniciarInspeccion">
+                        <i class="bi bi-play-circle"></i> Iniciar Inspección
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress bar (se mostrará dinámicamente) -->
+        <div class="progress" id="progressBar" style="display: none;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                 role="progressbar" style="width: 0%"></div>
         </div>
 
         <!-- Secciones de Preguntas (se llenará dinámicamente) -->
@@ -146,14 +295,29 @@
 
         <!-- Botones Finales -->
         <div class="text-center mt-4 mb-5" id="finalizarContainer" style="display: none;">
-            <button class="btn btn-info me-2" id="guardarAvanceBtn">💾 Guardar Avance</button>
-            <button class="btn btn-success me-2" id="generarExcelBtn">📊 Generar Excel</button>
-            <button class="btn btn-secondary me-3" id="otroDepartamentoBtn">🏢 Inspeccionar Otro Departamento</button>
-            <button class="btn btn-primary" id="finalizarInspeccion">📄 Finalizar Inspección y Generar PDF</button>
+            <div class="d-grid gap-2 d-md-block">
+                <button class="btn btn-info me-2 mb-2" id="guardarAvanceBtn">
+                    <i class="bi bi-save"></i> Guardar Avance
+                </button>
+                <button class="btn btn-success me-2 mb-2" id="generarExcelBtn">
+                    <i class="bi bi-file-earmark-excel"></i> Generar Excel
+                </button>
+                <button class="btn btn-secondary me-2 mb-2" id="otroDepartamentoBtn">
+                    <i class="bi bi-plus-circle"></i> Inspeccionar Otro Departamento
+                </button>
+                <button class="btn btn-primary" id="finalizarInspeccion">
+                    <i class="bi bi-file-pdf"></i> Finalizar y Generar PDF
+                </button>
+            </div>
+            <div class="mt-3 text-muted small">
+                <i class="bi bi-info-circle"></i> Se generará automáticamente un archivo Excel junto con el PDF
+            </div>
         </div>
 
         <!-- Badge de guardado -->
-        <div class="alert alert-success saved-badge" id="savedBadge">✓ Avance guardado</div>
+        <div class="alert alert-success saved-badge" id="savedBadge">
+            <i class="bi bi-check-circle"></i> Avance guardado correctamente
+        </div>
     </div>
 
     <!-- Modal para respuestas "No" -->
@@ -161,49 +325,68 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrar Observación</h5>
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle"></i> Registrar Observación
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <!-- Alerta de éxito -->
                     <div class="alert alert-success" id="alertaExito" style="display: none;">
-                        ✓ Observación guardada exitosamente
+                        <i class="bi bi-check-circle"></i> Observación guardada exitosamente
+                    </div>
+                    
+                    <!-- Información de la pregunta -->
+                    <div class="alert alert-info mb-3" id="preguntaInfo">
+                        <div class="fw-bold" id="preguntaSeccion"></div>
+                        <div id="preguntaTexto"></div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">Descripción del problema:</label>
-                        <textarea class="form-control" id="descripcionProblema" rows="3" placeholder="Describe el problema encontrado..."></textarea>
+                        <textarea class="form-control" id="descripcionProblema" rows="4" 
+                                  placeholder="Describe detalladamente el problema encontrado..."></textarea>
+                        <div class="form-text">Sé específico y claro en la descripción.</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Agregar imágenes:</label>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-outline-primary" id="subirImagenBtn">
-                                📁 Subir Imagen desde Archivo
+                        <label class="form-label fw-bold">Agregar evidencias fotográficas:</label>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button class="btn btn-outline-primary me-2" id="subirImagenBtn">
+                                <i class="bi bi-upload"></i> Subir Imagen
                             </button>
                             <button class="btn btn-outline-secondary" id="tomarFotoBtn">
-                                📷 Tomar Foto con Cámara
+                                <i class="bi bi-camera"></i> Tomar Foto
                             </button>
                         </div>
                         <input type="file" id="imagenInput" accept="image/*" style="display: none;">
                         <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display: none;">
                         
                         <!-- Contador de imágenes -->
-                        <div class="alert alert-info mt-3 mb-0" id="contadorImagenes">
-                            📸 Imágenes agregadas: <strong>0</strong>
+                        <div class="alert alert-light mt-3 mb-0" id="contadorImagenes">
+                            <i class="bi bi-images"></i> Imágenes agregadas: <strong>0</strong>
+                            <span class="text-muted ms-2">(Mínimo 1 requerida)</span>
                         </div>
                     </div>
                     
                     <!-- Galería de imágenes -->
                     <div id="galeriaImagenes" class="mb-3" style="display: none;">
                         <label class="form-label fw-bold">Imágenes de esta observación:</label>
-                        <div id="thumbnails" class="d-flex flex-wrap"></div>
+                        <div id="thumbnails" class="d-flex flex-wrap justify-content-center"></div>
+                    </div>
+                    
+                    <!-- Compresión de imágenes -->
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i> 
+                        Las imágenes se comprimirán automáticamente para optimizar el tamaño del PDF.
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
                     <button type="button" class="btn btn-primary" id="guardarObservacionBtn">
-                        ✓ Guardar Observación
+                        <i class="bi bi-save"></i> Guardar Observación
                     </button>
                 </div>
             </div>
@@ -214,6 +397,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="script.js"></script>
 </body>
 </html>
