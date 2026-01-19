@@ -1,627 +1,528 @@
 document.addEventListener("DOMContentLoaded", function() {
     const { jsPDF } = window.jspdf;
-    const app = {
-        datosGenerales: {},
-        departamentos: [],
-        departamentoActual: null,
-        dormitorioActual: 1,
-        preguntaActual: null,
-        observaciones: [],
-        imagenesTemporales: [],
-        modalNoInstance: null,
-        
+    
+    const FiscalizadorApp = {
         // ============================================
-        // AQUÍ VA TU ESTRUCTURA DE PREGUNTAS
-        
-        // Estructura de preguntas anidadas
-        estructura: {
-            "A. COCINA": {
-                "01. Muro": {
-                    "¿Están nivelados los muros?": null,
-                    "¿Presentan grietas o fisuras?": null,
-                    "¿El acabado es uniforme y sin imperfecciones?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correctamente instalada?": null,
-                    "¿Hay daños visibles en la tabiquería?": null,
-                    "¿Presenta alineación correcta?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo presenta grietas o imperfecciones?": null,
-                    "¿Está nivelado y uniforme?": null
-                },
-                "04. Corniza": {
-                    "¿La corniza está bien instalada y nivelada?": null,
-                    "¿Presenta daños o faltantes?": null
-                },
-                "05. Pintura Esmalte Cielo - Muro": {
-                    "¿La pintura está uniforme sin manchas o faltantes?": null,
-                    "¿El color es el especificado?": null
-                },
-                "06. Cerámica - Frague Muro": {
-                    "¿Las cerámicas están correctamente instaladas?": null,
-                    "¿El fragüe es uniforme y completo?": null,
-                },
-                "07. Cerámica - Frague Piso": {
-                    "¿Las cerámicas del piso están bien instaladas?": null,
-                    "¿El fragüe es uniforme y sin faltantes?": null,
-                },
-                "08. Enchufes - Interruptores": {
-                    "¿Los enchufes funcionan correctamente?": null,
-                    "¿Los interruptores operan bien?": null,
-                },
-                "09. Puerta y marco": {
-                    "¿El marco está bien instalado?": null,
-                    "¿La pintura de la puerta está bien aplicada?": null,
-                    "¿Las bisagras 3x3 funcionan correctamente?": null,
-                    "¿La cerradura funciona bien?": null,
-                    "¿La celosia está bien instalada?": null,
-                    "¿El tope de puerta está instalado?": null,
-                    "¿El burlete esta bien instalado?": null,
-                },
-                "10. Centro de Luz": {
-                    "¿El centro de luz funciona correctamente?": null,
-                    "¿Está bien instalado y seguro?": null,
-                    "¿las Tapa ciegas estan correctamente instaladas?": null,
-                },
-                "11. Extractor": {
-                    "¿El extractor funciona correctamente?": null,
-                    "¿Está bien instalado y sin fugas?": null
-                },
-                "12. Mueble - Lavaplatos": {
-                    "¿El sello del lavaplatos está completo y sin fugas?": null,
-                    "¿El lavaplatos está bien instalado?": null,
-                },
-                "13. Grifería Lavaplatos": {
-                    "¿La grifería funciona correctamente sin fugas?": null
-                },
-                "14. Sifón Lavaplatos": {
-                    "¿El sifón está bien instalado y sin fugas?": null
-                },
-                "16. Llave de Corte": {
-                    "¿La llave de corte funciona correctamente?": null
-                },
-                "17 . Red de Gas": {
-                    "¿La instalación de gas está correcta y sin fugas?": null
-                },
-                "18. Limpieza": {
-                    "¿El área está completamente limpia?": null
-                },
-                "19. Otros": {
-                    "¿Hay otros aspectos a señalar en esta área?": null
-                }
-            },
-            "B. LOGIA": {
-                "01. Muro": {
-                    "¿Los muros están nivelados y sin daños?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correctamente instalada?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo está en buen estado?": null
-                },
-                "04. Corniza": {
-                    "¿La corniza está bien instalada?": null
-                },
-                "06. Cerámica - Frague Muro": {
-                    "¿Las cerámicas están bien instaladas?": null,
-                    "¿El fragüe es uniforme y completo?": null,
-                },
-                "07. Cerámica - Frague Piso": {
-                    "¿El piso cerámico está en buen estado?": null,
-                    "¿El fragüe es uniforme y sin faltantes?": null,
-                },
-                "08. Enchufes - Interruptores": {
-                    "¿Los enchufes funcionan bien?": null,
-                    "¿Los interruptores operan bien?": null,
-                },
-                "09. Centro de Luz": {
-                    "¿El centro de luz funciona correctamente?": null
-                },
-                "16. Lavadero - Sello": {
-                    "¿El sello del lavadero está completo?": null
-                },
-                "17. Llaves Lavadero AF - AC": {
-                    "¿Las llaves funcionan correctamente?": null
-                },
-                "18. Sifon Lavadero": {
-                    "¿El sifón está bien instalado?": null
-                },
-                "19. Llaves Lavadora AF - AC": {
-                    "¿Las llaves funcionan correctamente?": null
-                },
-                "20. Descarga Lavadora": {
-                    "¿La descarga funciona bien?": null
-                },
-                "21. Llave de Corte": {
-                    "¿La llave de corte funciona?": null
-                },
-                "22. Calefont": {
-                    "¿El calefont funciona correctamente?": null
-                },
-                "23. Red de Gas": {
-                    "¿La instalación de gas está correcta?": null
-                },
-                "25. Limpieza": {
-                    "¿El área está limpia?": null
-                },
-                "26. Otros": {
-                    "¿Hay otros aspectos a señalar?": null
-                }
-            },
-            "C. ESTAR COMEDOR": {
-                "01. Muro": {
-                    "¿Los muros están en buen estado?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correcta?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo está en buen estado?": null
-                },
-                "04. Piso - Recubrimiento": {
-                    "¿El piso está en buen estado?": null
-                },
-                "05. Corniza": {
-                    "¿La corniza está bien instalada?": null
-                },
-                "06. Ventanal": {
-                    "¿El ventanal está bien sellado?": null,
-                    "¿El burlete esta bien instalado?": null,
-                },
-                "09. Puerta y marco": {
-                    "¿El marco está bien instalado?": null,
-                    "¿La pintura de la puerta está bien aplicada?": null,
-                    "¿Las bisagras 3x3 funcionan correctamente?": null,
-                    "¿La cerradura funciona bien?": null,
-                    "¿La celosia está bien instalada?": null,
-                    "¿El tope de puerta está instalado?": null,
-                    "¿El burlete esta bien instalado?": null,    
-                },
-                "15. Enchufes - Interruptores": {
-                    "¿Los enchufes funcionan bien?": null,
-                    "¿Los interruptores operan bien?": null,
-                },
-                "16. Centro de Luz": {
-                    "¿El centro de luz funciona?": null,
-                    "¿las Tapa ciegas estan correctamente instaladas?": null,
-                },
-                "17. Tablero Eléctrico": {
-                    "¿El tablero eléctrico está correcto?": null
-                },
-                "18. Limpieza": {
-                    "¿El área está limpia?": null
-                },
-                "19. Otros": {
-                    "¿Hay otros aspectos a señalar?": null
-                }
-            },
-            "D. TERRAZA": {
-                "01. Muro": {
-                    "¿El muro esta en buen estado?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correcta?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo está en buen estado?": null
-                },
-                "04. Cerámica Piso": {
-                    "¿El piso cerámico está bien instalado?": null
-                },
-                "16. Centro de Luz": {
-                    "¿El centro de luz funciona?": null,
-                    "¿las Tapa ciegas estan correctamente instaladas?": null,
-                },
-                "07. Pintura Muro": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "08. Baranda": {
-                    "¿La baranda está bien instalada y segura?": null
-                },
-                "18. Limpieza": {
-                    "¿El área está limpia?": null
-                },
-                "19. Otros": {
-                    "¿Hay otros aspectos a señalar?": null
-                }
-            },
-            "E. BAÑO": {
-                "01. Muro": {
-                    "¿Los muros están en buen estado?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correcta?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo está en buen estado?": null
-                },
-                "04. Corniza": {
-                    "¿La corniza está bien instalada?": null
-                },
-                "05. Pintura Esmalte Cielo - Muro": {
-                    "¿La pintura está bien aplicada?": null
-                },
-                "06. Cerámica - Frague Muro": {
-                    "¿Las cerámicas están correctamente instaladas?": null,
-                    "¿El fragüe es uniforme y completo?": null,
-                },
-                "07. Cerámica - Frague Piso": {
-                    "¿Las cerámicas del piso están bien instaladas?": null,
-                    "¿El fragüe es uniforme y sin faltantes?": null,
-                },
-                "09. Puerta y marco": {
-                    "¿La puerta con celosia funciona correctamente?": null,
-                    "¿El marco está bien instalado?": null,
-                    "¿La pintura de la puerta está bien aplicada?": null,
-                    "¿Las bisagras 3x3 funcionan correctamente?": null,
-                    "¿La cerradura funciona bien?": null,
-                    "¿La celosia está bien instalada?": null,
-                    "¿El tope de puerta está instalado?": null,
-                    "¿El burlete esta bien instalado?": null,
-                },
-                "15. Enchufe - Interruptor": {
-                    "¿Los enchufes funcionan?": null,
-                    "¿Los interruptores operan bien?": null,
-                },
-                "16. Centro de Luz": {
-                    "¿El centro de luz funciona?": null
-                },
-                "17. Extractor": {
-                    "¿El extractor funciona correctamente?": null
-                },
-                "18. Tina": {
-                    "¿La tina está bien sellada?": null,
-                    "¿esta bien instalada la celosia?": null,
-                    "¿La grifería funciona sin fugas?": null,
-                },
-                "20. WC": {
-                    "¿El WC está bien sellado?": null,
-                    "¿La llave angular funciona?": null,
-                },
-                "22. Lavamanos": {
-                    "¿El lavamanos está bien sellado?": null,
-                    "¿La llave de corte funciona?": null,
-                    "¿La grifería funciona sin fugas?": null,
-                },
-                "23. Accesorios - Toallero - Jabonera - Porta Papel": {
-                    "¿Los accesorios están bien instalados?": null
-                },
-                "24. Celosia": {
-                    "¿La celosía funciona correctamente?": null
-                },
-                "26. Limpieza": {
-                    "¿El baño está completamente limpio?": null
-                },
-                "27. Otros": {
-                    "¿Hay otros aspectos a señalar?": null
-                }
-            },
-            "F. DORMITORIO": {
-                "01. Muro": {
-                    "¿Los muros están en buen estado?": null
-                },
-                "02. Tabiquería": {
-                    "¿La tabiquería está correcta?": null
-                },
-                "03. Cielo": {
-                    "¿El cielo está en buen estado?": null
-                },
-                "04. Piso": {
-                    "¿El piso está en buen estado?": null
-                },
-                "05. Corniza": {
-                    "¿La corniza está bien instalada?": null
-                },
-                "06. Ventana": {
-                    "¿La ventana está bien sellada?": null
-                },
-                "09. Puerta y marco": {
-                    "¿La puerta funciona correctamente?": null,
-                    "¿El marco está bien instalado?": null,
-                    "¿Las bisagras 3x3 funcionan correctamente?": null,
-                    "¿La cerradura funciona bien?": null,
-                    "¿El tope de puerta está instalado?": null,
-                },
-                "13. Ventilación Jonas": {
-                    "¿La ventilación funciona correctamente?": null
-                },
-                "14. Enchufes - Interruptor": {
-                    "¿Los enchufes funcionan?": null,
-                    "¿Los interruptores operan bien?": null,
-                },
-                "15. Centro de Luz": {
-                    "¿El centro de luz funciona?": null
-                },
-                "16. Limpieza": {
-                    "¿El dormitorio está completamente limpio?": null
-                },
-                "17. Otros": {
-                    "¿Hay otros aspectos a señalar?": null
-                }
-            },
-            "OBSERVACIONES GENERALES": {
-                "01. Observaciones adicionales": null,
-                "02. Comentarios finales": null
-            }
+        // CONSTANTES Y CONFIGURACIÓN
+        // ============================================
+        CONFIG: {
+            MAX_IMAGE_SIZE: 800, // Tamaño máximo para compresión
+            JPEG_QUALITY: 0.7,   // Calidad JPEG para compresión
+            CSV_URL: 'questions.csv', // Ruta al CSV de preguntas
+            STORAGE_KEY: 'fiscalizacionObra_v2'
         },
-        // ============================================
         
-        init: function() {
+        // ============================================
+        // ESTADO DE LA APLICACIÓN
+        // ============================================
+        estado: {
+            datosGenerales: {},
+            departamentos: [],
+            departamentoActual: null,
+            observaciones: [],
+            preguntas: [], // Cargadas desde CSV
+            estructura: {}, // Estructura jerárquica
+            imagenesTemporales: [],
+            preguntaActual: null,
+            modalNoInstance: null
+        },
+        
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        async init() {
             this.setupEventListeners();
+            await this.cargarPreguntasDesdeCSV();
             this.cargarAvance();
         },
         
-        setupEventListeners: function() {
+        // ============================================
+        // CARGA DE PREGUNTAS DESDE CSV
+        // ============================================
+        async cargarPreguntasDesdeCSV() {
+            this.mostrarLoading('Cargando preguntas desde CSV...');
+            
+            try {
+                const response = await fetch(this.CONFIG.CSV_URL);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                this.estado.preguntas = this.parsearCSV(csvText);
+                this.construirEstructura();
+                
+                console.log(`✅ ${this.estado.preguntas.length} preguntas cargadas desde CSV`);
+            } catch (error) {
+                console.error('Error cargando CSV:', error);
+                this.mostrarNotificacion('Error cargando preguntas. Usando preguntas por defecto.', 'danger');
+                this.cargarPreguntasPorDefecto();
+            } finally {
+                this.ocultarLoading();
+            }
+        },
+        
+        parsearCSV(csvText) {
+            const lines = csvText.split('\n');
+            const preguntas = [];
+            const headers = lines[0].split(';').map(h => h.trim());
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = lines[i].split(';').map(v => v.trim());
+                if (values.length < headers.length) continue;
+                
+                const pregunta = {};
+                headers.forEach((header, index) => {
+                    pregunta[header] = values[index] || '';
+                });
+                
+                // Generar ID único si no existe
+                if (!pregunta.id) {
+                    pregunta.id = `q${Date.now()}_${i}`;
+                }
+                
+                preguntas.push(pregunta);
+            }
+            
+            return preguntas;
+        },
+        
+        cargarPreguntasPorDefecto() {
+            // Preguntas por defecto en caso de error
+            this.estado.preguntas = [
+                { id: 'A01', section: 'A. COCINA', subsection: '01. Muro', question: '¿Están nivelados los muros?', order: '1' },
+                { id: 'A04', section: 'A. COCINA', subsection: '02. Tabiquería', question: '¿La tabiquería está correctamente instalada?', order: '1' },
+                { id: 'B01', section: 'B. LOGIA', subsection: '01. Muro', question: '¿Los muros están nivelados y sin daños?', order: '1' },
+                { id: 'F01', section: 'F. DORMITORIO', subsection: '01. Muro', question: '¿Los muros están en buen estado?', order: '1' },
+                { id: 'O01', section: 'OBSERVACIONES GENERALES', subsection: '', question: '01. Observaciones adicionales', order: '1' }
+            ];
+            this.construirEstructura();
+        },
+        
+        construirEstructura() {
+            this.estado.estructura = {};
+            
+            this.estado.preguntas.forEach(pregunta => {
+                const seccion = pregunta.section || 'SIN SECCIÓN';
+                const subseccion = pregunta.subsection || 'SIN SUBSECCIÓN';
+                
+                if (!this.estado.estructura[seccion]) {
+                    this.estado.estructura[seccion] = {};
+                }
+                
+                if (!this.estado.estructura[seccion][subseccion]) {
+                    this.estado.estructura[seccion][subseccion] = [];
+                }
+                
+                this.estado.estructura[seccion][subseccion].push({
+                    id: pregunta.id,
+                    texto: pregunta.question,
+                    orden: parseInt(pregunta.order) || 999
+                });
+            });
+            
+            // Ordenar preguntas dentro de cada subsección
+            Object.keys(this.estado.estructura).forEach(seccion => {
+                Object.keys(this.estado.estructura[seccion]).forEach(subseccion => {
+                    this.estado.estructura[seccion][subseccion].sort((a, b) => a.orden - b.orden);
+                });
+            });
+        },
+        
+        // ============================================
+        // MANEJO DE EVENTOS
+        // ============================================
+        setupEventListeners() {
             // Iniciar inspección
-            document.getElementById("iniciarInspeccion").addEventListener("click", () => this.iniciarInspeccion());
+            document.getElementById('iniciarInspeccion').addEventListener('click', () => this.iniciarInspeccion());
             
             // Modal para respuestas "No"
-            document.getElementById("subirImagenBtn").addEventListener("click", () => document.getElementById("imagenInput").click());
-            document.getElementById("tomarFotoBtn").addEventListener("click", () => document.getElementById("fotoInput").click());
-            document.getElementById("imagenInput").addEventListener("change", (e) => this.cargarImagen(e));
-            document.getElementById("fotoInput").addEventListener("change", (e) => this.cargarImagen(e));
-            document.getElementById("guardarObservacionBtn").addEventListener("click", () => this.guardarObservacion());
+            document.getElementById('subirImagenBtn').addEventListener('click', () => document.getElementById('imagenInput').click());
+            document.getElementById('tomarFotoBtn').addEventListener('click', () => document.getElementById('fotoInput').click());
+            document.getElementById('imagenInput').addEventListener('change', (e) => this.cargarImagen(e));
+            document.getElementById('fotoInput').addEventListener('change', (e) => this.cargarImagen(e));
+            document.getElementById('guardarObservacionBtn').addEventListener('click', () => this.guardarObservacion());
             
             // Botones finales
-            document.getElementById("otroDepartamentoBtn")?.addEventListener("click", () => this.prepararNuevoDepartamento());
-            document.getElementById("finalizarInspeccion")?.addEventListener("click", () => this.generarPDF());
-            document.getElementById("guardarAvanceBtn")?.addEventListener("click", () => {
+            document.getElementById('otroDepartamentoBtn')?.addEventListener('click', () => this.prepararNuevoDepartamento());
+            document.getElementById('finalizarInspeccion')?.addEventListener('click', () => this.generarPDF());
+            document.getElementById('guardarAvanceBtn')?.addEventListener('click', () => {
                 this.guardarAvance();
                 this.mostrarBadgeGuardado();
             });
-            document.getElementById("generarExcelBtn")?.addEventListener("click", () => this.generarExcel());
+            document.getElementById('generarExcelBtn')?.addEventListener('click', () => this.generarExcel());
             
-            // Prevenir pérdida de datos al salir
-            window.addEventListener("beforeunload", (e) => {
-                if (this.departamentoActual || this.departamentos.length > 0) {
+            // Prevenir pérdida de datos
+            window.addEventListener('beforeunload', (e) => {
+                if (this.estado.departamentoActual || this.estado.departamentos.length > 0) {
                     e.preventDefault();
-                    e.returnValue = "Tienes datos no guardados. ¿Estás seguro de querer salir?";
+                    e.returnValue = 'Tienes datos no guardados. ¿Estás seguro de querer salir?';
                 }
             });
         },
         
-        mostrarBadgeGuardado: function() {
-            const badge = document.getElementById("savedBadge");
-            badge.style.display = "block";
+        // ============================================
+        // GESTIÓN DE OBSERVACIONES (CORRECCIÓN DEL BUG)
+        // ============================================
+        obtenerPreguntaCompleta(preguntaId) {
+            return this.estado.preguntas.find(p => p.id === preguntaId);
+        },
+        
+        obtenerJerarquia(preguntaId) {
+            const pregunta = this.obtenerPreguntaCompleta(preguntaId);
+            if (!pregunta) return null;
+            
+            return {
+                seccion: pregunta.section,
+                subseccion: pregunta.subsection,
+                preguntaId: pregunta.id,
+                preguntaTexto: pregunta.question
+            };
+        },
+        
+        // ============================================
+        // INTERFAZ DE USUARIO
+        // ============================================
+        mostrarLoading(texto = 'Procesando...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const textElem = document.getElementById('loadingText');
+            textElem.textContent = texto;
+            overlay.style.display = 'flex';
+        },
+        
+        ocultarLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        },
+        
+        mostrarBadgeGuardado() {
+            const badge = document.getElementById('savedBadge');
+            badge.style.display = 'block';
             setTimeout(() => {
-                badge.style.display = "none";
+                badge.style.display = 'none';
             }, 3000);
         },
         
-        mostrarNotificacion: function(mensaje, tipo = "info") {
-            const alerta = document.getElementById("alertaExito");
-            alerta.className = `alert alert-${tipo}`;
+        mostrarNotificacion(mensaje, tipo = 'info') {
+            const alerta = document.getElementById('alertaExito');
             
-            let icono = "✓";
-            if (tipo === "warning") icono = "⚠";
-            if (tipo === "danger") icono = "✗";
-            if (tipo === "info") icono = "ℹ";
+            // Limpiar clases anteriores
+            alerta.className = 'alert';
+            
+            // Agregar clase según tipo
+            if (tipo === 'success') alerta.classList.add('alert-success');
+            else if (tipo === 'warning') alerta.classList.add('alert-warning');
+            else if (tipo === 'danger') alerta.classList.add('alert-danger');
+            else alerta.classList.add('alert-info');
+            
+            // Agregar ícono
+            let icono = 'ℹ️';
+            if (tipo === 'success') icono = '✅';
+            else if (tipo === 'warning') icono = '⚠️';
+            else if (tipo === 'danger') icono = '❌';
             
             alerta.innerHTML = `${icono} ${mensaje}`;
-            alerta.style.display = "block";
+            alerta.style.display = 'block';
             
             setTimeout(() => {
-                alerta.style.display = "none";
+                alerta.style.display = 'none';
             }, 3000);
         },
         
-        iniciarInspeccion: function() {
-            const numeroDepto = document.getElementById("numeroDepto").value;
+        // ============================================
+        // LÓGICA DE INSPECCIÓN
+        // ============================================
+        iniciarInspeccion() {
+            const numeroDepto = document.getElementById('numeroDepto').value.trim();
             
             if (!numeroDepto) {
-                this.mostrarNotificacion("Por favor ingresa un número de departamento", "warning");
+                this.mostrarNotificacion('Por favor ingresa un número de departamento', 'warning');
                 return;
             }
             
-            if (this.departamentos.some(depto => depto.numero === numeroDepto)) {
-                this.mostrarNotificacion("Este departamento ya ha sido inspeccionado", "warning");
+            if (this.estado.departamentos.some(depto => depto.numero === numeroDepto)) {
+                this.mostrarNotificacion('Este departamento ya ha sido inspeccionado', 'warning');
                 return;
             }
-                
-            if (this.departamentos.length === 0) {
-                this.datosGenerales = {
-                    nombreObra: document.getElementById("nombreObra").value,
-                    comuna: document.getElementById("comuna").value,
-                    empresaContratista: document.getElementById("empresaContratista").value,
-                    entidadPatrocinante: document.getElementById("entidadPatrocinante").value,
-                    supervisor: document.getElementById("supervisor").value,
-                    directorObra: document.getElementById("directorObra").value,
-                    cantidadDormitorios: parseInt(document.getElementById("cantidadDormitorios").value)
+            
+            // Guardar datos generales si es el primer departamento
+            if (this.estado.departamentos.length === 0) {
+                this.estado.datosGenerales = {
+                    nombreObra: document.getElementById('nombreObra').value.trim(),
+                    comuna: document.getElementById('comuna').value.trim(),
+                    empresaContratista: document.getElementById('empresaContratista').value.trim(),
+                    entidadPatrocinante: document.getElementById('entidadPatrocinante').value.trim(),
+                    supervisor: document.getElementById('supervisor').value.trim(),
+                    directorObra: document.getElementById('directorObra').value.trim(),
+                    cantidadDormitorios: parseInt(document.getElementById('cantidadDormitorios').value)
                 };
                 
-                document.getElementById("nombreObra").disabled = true;
-                document.getElementById("comuna").disabled = true;
-                document.getElementById("empresaContratista").disabled = true;
-                document.getElementById("entidadPatrocinante").disabled = true;
-                document.getElementById("supervisor").disabled = true;
-                document.getElementById("directorObra").disabled = true;
-                document.getElementById("cantidadDormitorios").disabled = true;
+                // Deshabilitar campos
+                ['nombreObra', 'comuna', 'empresaContratista', 'entidadPatrocinante', 'supervisor', 'directorObra', 'cantidadDormitorios'].forEach(id => {
+                    document.getElementById(id).disabled = true;
+                });
             }
             
-            this.departamentoActual = {
+            // Crear departamento actual
+            this.estado.departamentoActual = {
                 numero: numeroDepto,
-                dormitorios: [],
+                fechaInicio: new Date().toISOString(),
                 respuestas: {}
             };
             
+            // Mostrar preguntas
             this.mostrarPreguntas();
             
-            document.getElementById("datosGeneralesSection").style.display = "none";
-            document.getElementById("selectorDeptoSection").style.display = "none";
-            document.getElementById("finalizarContainer").style.display = "block";
+            // Actualizar UI
+            document.getElementById('datosGeneralesSection').style.display = 'none';
+            document.getElementById('selectorDeptoSection').style.display = 'none';
+            document.getElementById('finalizarContainer').style.display = 'block';
             
             this.guardarAvance();
         },
         
-        mostrarPreguntas: function() {
-            const contenedor = document.getElementById("seccionesPreguntas");
-            contenedor.innerHTML = "";
+        mostrarPreguntas() {
+            const contenedor = document.getElementById('seccionesPreguntas');
+            contenedor.innerHTML = '';
             
-            const tituloDepto = document.createElement("h2");
-            tituloDepto.className = "my-4";
-            tituloDepto.textContent = `Departamento: ${this.departamentoActual.numero}`;
+            // Título del departamento
+            const tituloDepto = document.createElement('div');
+            tituloDepto.className = 'depto-titulo';
+            tituloDepto.innerHTML = `<h2>Departamento: ${this.estado.departamentoActual.numero}</h2>`;
             contenedor.appendChild(tituloDepto);
             
-            for (const [seccion, preguntas] of Object.entries(this.estructura)) {
-                if (seccion !== "F. DORMITORIO" && seccion !== "OBSERVACIONES GENERALES") {
-                    this.crearSeccionPreguntas(contenedor, seccion, preguntas);
+            // Mostrar secciones (excepto dormitorios)
+            Object.keys(this.estado.estructura).forEach(seccion => {
+                if (!seccion.startsWith('F. DORMITORIO') && seccion !== 'OBSERVACIONES GENERALES') {
+                    this.crearSeccionPreguntas(contenedor, seccion);
                 }
-            }
-            
-            for (let i = 1; i <= this.datosGenerales.cantidadDormitorios; i++) {
-                const dormitorioSection = document.createElement("div");
-                dormitorioSection.className = "section";
-                
-                const tituloDormitorio = document.createElement("h3");
-                tituloDormitorio.textContent = `F. DORMITORIO ${i}`;
-                dormitorioSection.appendChild(tituloDormitorio);
-                
-                this.crearPreguntas(dormitorioSection, this.estructura["F. DORMITORIO"]);
-                contenedor.appendChild(dormitorioSection);
-            }
-            
-            this.crearSeccionPreguntas(contenedor, "OBSERVACIONES GENERALES", this.estructura["OBSERVACIONES GENERALES"]);
-            
-            document.getElementById("finalizarContainer").style.display = "block";
-        },
-        
-        prepararNuevoDepartamento: function() {
-            if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
-                this.departamentos.push({...this.departamentoActual});
-            }
-        
-            document.getElementById("numeroDepto").value = "";
-            document.getElementById("seccionesPreguntas").innerHTML = "";
-            document.getElementById("finalizarContainer").style.display = "none";
-            document.getElementById("datosGeneralesSection").style.display = "none";
-            document.getElementById("selectorDeptoSection").style.display = "block";
-        
-            this.guardarAvance();
-            
-            document.getElementById("selectorDeptoSection").scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
             });
-            document.getElementById("numeroDepto").focus();
+            
+            // Crear dormitorios según cantidad
+            for (let i = 1; i <= this.estado.datosGenerales.cantidadDormitorios; i++) {
+                this.crearSeccionPreguntas(contenedor, 'F. DORMITORIO', i);
+            }
+            
+            // Observaciones generales
+            this.crearSeccionPreguntas(contenedor, 'OBSERVACIONES GENERALES');
         },
         
-        crearSeccionPreguntas: function(contenedor, seccion, preguntas) {
-            const sectionDiv = document.createElement("div");
-            sectionDiv.className = "section";
+        crearSeccionPreguntas(contenedor, seccion, dormitorioNumero = null) {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'section';
+            sectionDiv.dataset.seccion = seccion;
+            if (dormitorioNumero) {
+                sectionDiv.dataset.dormitorio = dormitorioNumero;
+            }
             
-            const titulo = document.createElement("h3");
-            titulo.textContent = seccion;
+            const titulo = document.createElement('h3');
+            if (dormitorioNumero && seccion === 'F. DORMITORIO') {
+                titulo.textContent = `${seccion} ${dormitorioNumero}`;
+            } else {
+                titulo.textContent = seccion;
+            }
             sectionDiv.appendChild(titulo);
             
-            this.crearPreguntas(sectionDiv, preguntas);
+            // Obtener subsecciones de esta sección
+            const subsecciones = this.estado.estructura[seccion];
+            if (!subsecciones) return;
+            
+            Object.keys(subsecciones).forEach(subseccion => {
+                if (subseccion.trim()) {
+                    const subseccionDiv = document.createElement('div');
+                    subseccionDiv.className = 'mb-4';
+                    
+                    const subseccionTitulo = document.createElement('h5');
+                    subseccionTitulo.className = 'text-secondary mb-3';
+                    subseccionTitulo.textContent = subseccion;
+                    subseccionDiv.appendChild(subseccionTitulo);
+                    
+                    this.crearPreguntasDeSubseccion(subseccionDiv, seccion, subseccion, dormitorioNumero);
+                    sectionDiv.appendChild(subseccionDiv);
+                } else {
+                    // Preguntas sin subsección
+                    this.crearPreguntasDeSubseccion(sectionDiv, seccion, '', dormitorioNumero);
+                }
+            });
+            
             contenedor.appendChild(sectionDiv);
         },
         
-        crearPreguntas: function(sectionDiv, preguntas, nivel = 0) {
-            for (const [pregunta, subpreguntas] of Object.entries(preguntas)) {
-                const preguntaDiv = document.createElement("div");
-                preguntaDiv.className = "question";
-                preguntaDiv.style.marginLeft = `${nivel * 20}px`;
-                
-                const label = document.createElement("label");
-                label.className = "form-label";
-                label.textContent = pregunta;
-                preguntaDiv.appendChild(label);
-                
-                if (subpreguntas === null) {
-                    const select = document.createElement("select");
-                    select.className = "form-select respuesta";
-                    select.dataset.pregunta = pregunta;
-                    
-                    const opcionSi = document.createElement("option");
-                    opcionSi.value = "si";
-                    opcionSi.textContent = "Sí";
-                    
-                    const opcionNo = document.createElement("option");
-                    opcionNo.value = "no";
-                    opcionNo.textContent = "No";
-                    
-                    select.appendChild(opcionSi);
-                    select.appendChild(opcionNo);
-                    
-                    select.addEventListener("change", (e) => {
-                        if (e.target.value === "no") {
-                            this.preguntaActual = pregunta;
-                            this.mostrarModalNo();
-                        }
-                    });
-                    
-                    preguntaDiv.appendChild(select);
-                } else {
-                    const subContainer = document.createElement("div");
-                    subContainer.className = "subpreguntas";
-                    this.crearPreguntas(subContainer, subpreguntas, nivel + 1);
-                    preguntaDiv.appendChild(subContainer);
+        crearPreguntasDeSubseccion(container, seccion, subseccion, dormitorioNumero) {
+            const preguntas = this.estado.estructura[seccion][subseccion] || [];
+            
+            preguntas.forEach(pregunta => {
+                const preguntaDiv = document.createElement('div');
+                preguntaDiv.className = 'question';
+                preguntaDiv.dataset.preguntaId = pregunta.id;
+                preguntaDiv.dataset.seccion = seccion;
+                preguntaDiv.dataset.subseccion = subseccion;
+                if (dormitorioNumero) {
+                    preguntaDiv.dataset.dormitorio = dormitorioNumero;
                 }
                 
-                sectionDiv.appendChild(preguntaDiv);
-            }
+                // Texto de la pregunta
+                const label = document.createElement('div');
+                label.className = 'pregunta-texto';
+                label.textContent = pregunta.texto;
+                preguntaDiv.appendChild(label);
+                
+                // Selector de respuesta
+                const select = document.createElement('select');
+                select.className = 'form-select respuesta';
+                select.dataset.preguntaId = pregunta.id;
+                
+                const opcionSi = document.createElement('option');
+                opcionSi.value = 'si';
+                opcionSi.textContent = 'Sí';
+                
+                const opcionNo = document.createElement('option');
+                opcionNo.value = 'no';
+                opcionNo.textContent = 'No';
+                
+                select.appendChild(opcionSi);
+                select.appendChild(opcionNo);
+                
+                select.addEventListener('change', (e) => {
+                    if (e.target.value === 'no') {
+                        this.estado.preguntaActual = {
+                            id: pregunta.id,
+                            seccion: seccion,
+                            subseccion: subseccion,
+                            dormitorio: dormitorioNumero,
+                            texto: pregunta.texto
+                        };
+                        this.mostrarModalNo();
+                    }
+                });
+                
+                preguntaDiv.appendChild(select);
+                container.appendChild(preguntaDiv);
+            });
         },
         
-        mostrarModalNo: function() {
-            document.getElementById("descripcionProblema").value = "";
-            document.getElementById("alertaExito").style.display = "none";
-            this.imagenesTemporales = [];
+        // ============================================
+        // MODAL PARA OBSERVACIONES
+        // ============================================
+        mostrarModalNo() {
+            if (!this.estado.preguntaActual) return;
             
-            document.getElementById("galeriaImagenes").style.display = "none";
-            document.getElementById("thumbnails").innerHTML = "";
+            // Configurar información de la pregunta
+            document.getElementById('preguntaSeccion').textContent = 
+                `${this.estado.preguntaActual.seccion} ${this.estado.preguntaActual.dormitorio ? `- Dormitorio ${this.estado.preguntaActual.dormitorio}` : ''}`;
+            document.getElementById('preguntaTexto').textContent = this.estado.preguntaActual.texto;
+            
+            // Limpiar campos
+            document.getElementById('descripcionProblema').value = '';
+            document.getElementById('alertaExito').style.display = 'none';
+            this.estado.imagenesTemporales = [];
+            
+            // Actualizar galería
+            document.getElementById('galeriaImagenes').style.display = 'none';
+            document.getElementById('thumbnails').innerHTML = '';
             this.actualizarContadorImagenes();
             
-            if (!this.modalNoInstance) {
-                this.modalNoInstance = new bootstrap.Modal(document.getElementById("modalNo"));
+            // Mostrar modal
+            if (!this.estado.modalNoInstance) {
+                this.estado.modalNoInstance = new bootstrap.Modal(document.getElementById('modalNo'));
             }
-            this.modalNoInstance.show();
+            this.estado.modalNoInstance.show();
             
             setTimeout(() => {
-                document.getElementById("descripcionProblema").focus();
+                document.getElementById('descripcionProblema').focus();
             }, 300);
         },
         
-        cargarImagen: function(event) {
+        async cargarImagen(event) {
             const file = event.target.files[0];
             if (!file) return;
-
+            
             event.target.value = '';
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                // Agregar imagen directamente
-                this.imagenesTemporales.push(e.target.result);
+            
+            // Verificar tamaño máximo (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                this.mostrarNotificacion('La imagen es demasiado grande (máximo 10MB)', 'warning');
+                return;
+            }
+            
+            this.mostrarLoading('Comprimiendo imagen...');
+            
+            try {
+                const imagenComprimida = await this.comprimirImagen(file);
+                this.estado.imagenesTemporales.push(imagenComprimida);
                 this.actualizarGaleria();
-                //this.mostrarNotificacion("Imagen agregada correctamente", "success");
-            };
-            reader.readAsDataURL(file);
+                this.mostrarNotificacion('Imagen agregada y comprimida', 'success');
+            } catch (error) {
+                console.error('Error procesando imagen:', error);
+                this.mostrarNotificacion('Error al procesar la imagen', 'danger');
+            } finally {
+                this.ocultarLoading();
+            }
         },
         
-        actualizarGaleria: function() {
-            const galeria = document.getElementById("galeriaImagenes");
-            const thumbnails = document.getElementById("thumbnails");
+        async comprimirImagen(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        
+                        // Calcular nuevas dimensiones manteniendo proporción
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > this.CONFIG.MAX_IMAGE_SIZE || height > this.CONFIG.MAX_IMAGE_SIZE) {
+                            if (width > height) {
+                                height = Math.round((height * this.CONFIG.MAX_IMAGE_SIZE) / width);
+                                width = this.CONFIG.MAX_IMAGE_SIZE;
+                            } else {
+                                width = Math.round((width * this.CONFIG.MAX_IMAGE_SIZE) / height);
+                                height = this.CONFIG.MAX_IMAGE_SIZE;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Convertir a JPEG con calidad reducida
+                        const imagenComprimida = canvas.toDataURL('image/jpeg', this.CONFIG.JPEG_QUALITY);
+                        resolve(imagenComprimida);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        },
+        
+        actualizarGaleria() {
+            const galeria = document.getElementById('galeriaImagenes');
+            const thumbnails = document.getElementById('thumbnails');
             
-            if (this.imagenesTemporales.length > 0) {
-                galeria.style.display = "block";
-                thumbnails.innerHTML = "";
+            if (this.estado.imagenesTemporales.length > 0) {
+                galeria.style.display = 'block';
+                thumbnails.innerHTML = '';
                 
-                this.imagenesTemporales.forEach((img, index) => {
-                    const container = document.createElement("div");
-                    container.className = "thumbnail-container";
+                this.estado.imagenesTemporales.forEach((img, index) => {
+                    const container = document.createElement('div');
+                    container.className = 'thumbnail-container';
                     
-                    const thumbnail = document.createElement("img");
+                    const thumbnail = document.createElement('img');
                     thumbnail.src = img;
-                    thumbnail.className = "thumbnail-img";
-                    thumbnail.title = "Click para ver en grande";
+                    thumbnail.className = 'thumbnail-img';
+                    thumbnail.title = 'Click para ver en grande';
                     thumbnail.onclick = () => this.verImagenGrande(img);
                     
-                    const btnEliminar = document.createElement("button");
-                    btnEliminar.className = "btn-eliminar-img";
-                    btnEliminar.innerHTML = "×";
-                    btnEliminar.title = "Eliminar imagen";
+                    const btnEliminar = document.createElement('button');
+                    btnEliminar.className = 'btn-eliminar-img';
+                    btnEliminar.innerHTML = '×';
+                    btnEliminar.title = 'Eliminar imagen';
                     btnEliminar.onclick = (e) => {
                         e.stopPropagation();
                         this.eliminarImagenTemporal(index);
@@ -632,454 +533,715 @@ document.addEventListener("DOMContentLoaded", function() {
                     thumbnails.appendChild(container);
                 });
             } else {
-                galeria.style.display = "none";
+                galeria.style.display = 'none';
             }
             
             this.actualizarContadorImagenes();
         },
         
-        actualizarContadorImagenes: function() {
-            const contador = document.getElementById("contadorImagenes");
-            contador.querySelector("strong").textContent = this.imagenesTemporales.length;
-        },
-        
-        eliminarImagenTemporal: function(index) {
-            if (confirm("¿Deseas eliminar esta imagen?")) {
-                this.imagenesTemporales.splice(index, 1);
-                this.actualizarGaleria();
-                this.mostrarNotificacion("Imagen eliminada", "info");
+        actualizarContadorImagenes() {
+            const contador = document.getElementById('contadorImagenes');
+            contador.querySelector('strong').textContent = this.estado.imagenesTemporales.length;
+            
+            // Cambiar color según cantidad
+            const strongElem = contador.querySelector('strong');
+            if (this.estado.imagenesTemporales.length === 0) {
+                strongElem.style.color = '#dc3545';
+            } else if (this.estado.imagenesTemporales.length >= 3) {
+                strongElem.style.color = '#28a745';
+            } else {
+                strongElem.style.color = '#007bff';
             }
         },
         
-        verImagenGrande: function(imgSrc) {
+        eliminarImagenTemporal(index) {
+            if (confirm('¿Deseas eliminar esta imagen?')) {
+                this.estado.imagenesTemporales.splice(index, 1);
+                this.actualizarGaleria();
+                this.mostrarNotificacion('Imagen eliminada', 'info');
+            }
+        },
+        
+        verImagenGrande(imgSrc) {
             const modalHTML = `
                 <div class="modal fade" id="modalImagenGrande" tabindex="-1">
-                    <div class="modal-dialog modal-xl">
+                    <div class="modal-dialog modal-xl modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">Vista de imagen</h5>
+                                <h5 class="modal-title">Vista previa</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body text-center">
-                                <img src="${imgSrc}" style="max-width: 100%; height: auto;">
+                            <div class="modal-body text-center p-0">
+                                <img src="${imgSrc}" class="imagen-preview" style="max-height: 80vh;">
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
-            const modalAnterior = document.getElementById("modalImagenGrande");
+            const modalAnterior = document.getElementById('modalImagenGrande');
             if (modalAnterior) modalAnterior.remove();
             
             document.body.insertAdjacentHTML('beforeend', modalHTML);
-            const modal = new bootstrap.Modal(document.getElementById("modalImagenGrande"));
+            const modal = new bootstrap.Modal(document.getElementById('modalImagenGrande'));
             modal.show();
             
-            document.getElementById("modalImagenGrande").addEventListener('hidden.bs.modal', function () {
+            document.getElementById('modalImagenGrande').addEventListener('hidden.bs.modal', function () {
                 this.remove();
             });
         },
         
-        guardarObservacion: function () {
-            const descripcion = document.getElementById("descripcionProblema").value.trim();
-
+        async guardarObservacion() {
+            if (!this.estado.preguntaActual) return;
+            
+            const descripcion = document.getElementById('descripcionProblema').value.trim();
+            
             if (!descripcion) {
-                this.mostrarNotificacion("Por favor ingresa una descripción del problema", "warning");
+                this.mostrarNotificacion('Por favor ingresa una descripción del problema', 'warning');
                 return;
             }
-
-            if (this.imagenesTemporales.length === 0) {
-                this.mostrarNotificacion("Por favor agrega al menos una imagen", "warning");
+            
+            if (this.estado.imagenesTemporales.length === 0) {
+                this.mostrarNotificacion('Por favor agrega al menos una imagen', 'warning');
                 return;
             }
-
+            
+            // Crear observación con estructura completa
             const nuevaObservacion = {
-                departamento: this.departamentoActual.numero,
-                pregunta: this.preguntaActual,
+                id: `obs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                departamento: this.estado.departamentoActual.numero,
+                preguntaId: this.estado.preguntaActual.id,
+                seccion: this.estado.preguntaActual.seccion,
+                subseccion: this.estado.preguntaActual.subseccion,
+                dormitorio: this.estado.preguntaActual.dormitorio,
+                preguntaTexto: this.estado.preguntaActual.texto,
                 descripcion: descripcion,
-                imagenes: [...this.imagenesTemporales],
+                imagenes: [...this.estado.imagenesTemporales],
                 fecha: new Date().toISOString()
             };
-
-            this.observaciones.push(nuevaObservacion);
-
-            console.log("Observación guardada:", nuevaObservacion);
-            console.log("Total observaciones:", this.observaciones.length);
-
-            // 🔒 INTENTAR guardar, pero sin romper el flujo
+            
+            this.estado.observaciones.push(nuevaObservacion);
+            
+            console.log('Observación guardada:', nuevaObservacion);
+            console.log('Total observaciones:', this.estado.observaciones.length);
+            
+            // Guardar avance
             try {
                 this.guardarAvance();
             } catch (e) {
-                console.warn("Guardado parcial, continuando flujo");
+                console.warn('Guardado parcial, continuando flujo');
             }
-
-            // ✅ LIMPIAR ESTADO
-            this.imagenesTemporales = [];
-            document.getElementById("descripcionProblema").value = "";
-
-            // ✅ CERRAR MODAL INMEDIATAMENTE
-            if (this.modalNoInstance) {
-                this.modalNoInstance.hide();
+            
+            // Limpiar estado
+            this.estado.imagenesTemporales = [];
+            document.getElementById('descripcionProblema').value = '';
+            
+            // Cerrar modal
+            if (this.estado.modalNoInstance) {
+                this.estado.modalNoInstance.hide();
             }
-
-            // ✅ NOTIFICACIÓN
+            
+            // Notificación
             this.mostrarNotificacion(
-                `✓ Observación guardada (${nuevaObservacion.imagenes.length} imagen(es))`,
-                "success"
+                `Observación guardada (${nuevaObservacion.imagenes.length} imagen(es))`,
+                'success'
             );
         },
-
         
-        guardarAvance: function () {
+        // ============================================
+        // PERSISTENCIA (LOCALSTORAGE)
+        // ============================================
+        guardarAvance() {
             try {
-                if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
-                    this.departamentos.push({ ...this.departamentoActual });
+                // Agregar departamento actual a la lista si no existe
+                if (this.estado.departamentoActual && 
+                    !this.estado.departamentos.some(d => d.numero === this.estado.departamentoActual.numero)) {
+                    this.estado.departamentos.push({ ...this.estado.departamentoActual });
                 }
-
-                const datos = {
-                    datosGenerales: this.datosGenerales,
-                    departamentos: this.departamentos,
-                    departamentoActual: this.departamentoActual,
-                    observaciones: this.observaciones
+                
+                // Guardar solo datos esenciales (evitar guardar preguntas ya que vienen del CSV)
+                const datosParaGuardar = {
+                    version: '2.0',
+                    datosGenerales: this.estado.datosGenerales,
+                    departamentos: this.estado.departamentos,
+                    departamentoActual: this.estado.departamentoActual,
+                    observaciones: this.estado.observaciones.map(obs => ({
+                        ...obs,
+                        imagenes: [] // No guardar imágenes en localStorage por tamaño
+                    }))
                 };
-
-                localStorage.setItem('fiscalizacionObra', JSON.stringify(datos));
-                console.log("Avance guardado. Observaciones:", this.observaciones.length);
-
+                
+                localStorage.setItem(this.CONFIG.STORAGE_KEY, JSON.stringify(datosParaGuardar));
+                console.log('✅ Avance guardado en localStorage');
+                
             } catch (error) {
-                console.error("Error guardando en localStorage:", error);
-
-                if (error.name === "QuotaExceededError") {
+                console.error('Error guardando en localStorage:', error);
+                
+                if (error.name === 'QuotaExceededError') {
                     this.mostrarNotificacion(
-                        "⚠️ Almacenamiento lleno. Las observaciones siguen en memoria y se incluirán en el PDF.",
-                        "warning"
+                        '⚠️ Almacenamiento local lleno. Las observaciones siguen en memoria.',
+                        'warning'
                     );
                 }
             }
         },
-
         
-        cargarAvance: function() {
-            const datosGuardados = localStorage.getItem('fiscalizacionObra');
+        cargarAvance() {
+            const datosGuardados = localStorage.getItem(this.CONFIG.STORAGE_KEY);
             if (datosGuardados) {
-                const datos = JSON.parse(datosGuardados);
-                this.datosGenerales = datos.datosGenerales || {};
-                this.departamentos = datos.departamentos || [];
-                this.departamentoActual = datos.departamentoActual || null;
-                this.observaciones = datos.observaciones || [];
-                
-                console.log("Avance cargado. Observaciones:", this.observaciones.length);
-                
-                if (this.datosGenerales.nombreObra) {
-                    document.getElementById("nombreObra").value = this.datosGenerales.nombreObra;
-                    document.getElementById("comuna").value = this.datosGenerales.comuna;
-                    document.getElementById("empresaContratista").value = this.datosGenerales.empresaContratista;
-                    document.getElementById("entidadPatrocinante").value = this.datosGenerales.entidadPatrocinante;
-                    document.getElementById("supervisor").value = this.datosGenerales.supervisor;
-                    document.getElementById("directorObra").value = this.datosGenerales.directorObra;
-                    document.getElementById("cantidadDormitorios").value = this.datosGenerales.cantidadDormitorios;
+                try {
+                    const datos = JSON.parse(datosGuardados);
                     
-                    document.getElementById("nombreObra").disabled = true;
-                    document.getElementById("comuna").disabled = true;
-                    document.getElementById("empresaContratista").disabled = true;
-                    document.getElementById("entidadPatrocinante").disabled = true;
-                    document.getElementById("supervisor").disabled = true;
-                    document.getElementById("directorObra").disabled = true;
-                    document.getElementById("cantidadDormitorios").disabled = true;
-                }
-                
-                if (this.departamentoActual) {
-                    this.mostrarPreguntas();
-                    document.getElementById("datosGeneralesSection").style.display = "none";
-                    document.getElementById("selectorDeptoSection").style.display = "none";
-                    document.getElementById("finalizarContainer").style.display = "block";
+                    // Verificar versión
+                    if (datos.version === '2.0') {
+                        this.estado.datosGenerales = datos.datosGenerales || {};
+                        this.estado.departamentos = datos.departamentos || [];
+                        this.estado.departamentoActual = datos.departamentoActual || null;
+                        this.estado.observaciones = datos.observaciones || [];
+                        
+                        console.log('✅ Avance cargado:', {
+                            departamentos: this.estado.departamentos.length,
+                            observaciones: this.estado.observaciones.length
+                        });
+                        
+                        // Restaurar UI si hay datos generales
+                        if (this.estado.datosGenerales.nombreObra) {
+                            this.restaurarCamposGenerales();
+                        }
+                        
+                        // Si hay departamento actual, mostrar preguntas
+                        if (this.estado.departamentoActual) {
+                            this.mostrarPreguntas();
+                            document.getElementById('datosGeneralesSection').style.display = 'none';
+                            document.getElementById('selectorDeptoSection').style.display = 'none';
+                            document.getElementById('finalizarContainer').style.display = 'block';
+                        }
+                    } else {
+                        console.log('Versión anterior de datos, iniciando desde cero');
+                        localStorage.removeItem(this.CONFIG.STORAGE_KEY);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error cargando datos guardados:', error);
+                    localStorage.removeItem(this.CONFIG.STORAGE_KEY);
                 }
             }
         },
         
-        generarExcel: function() {
-            if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
-                this.departamentos.push({...this.departamentoActual});
+        restaurarCamposGenerales() {
+            const campos = {
+                nombreObra: 'nombreObra',
+                comuna: 'comuna',
+                empresaContratista: 'empresaContratista',
+                entidadPatrocinante: 'entidadPatrocinante',
+                supervisor: 'supervisor',
+                directorObra: 'directorObra'
+            };
+            
+            Object.entries(campos).forEach(([key, id]) => {
+                if (this.estado.datosGenerales[key]) {
+                    document.getElementById(id).value = this.estado.datosGenerales[key];
+                    document.getElementById(id).disabled = true;
+                }
+            });
+            
+            if (this.estado.datosGenerales.cantidadDormitorios) {
+                document.getElementById('cantidadDormitorios').value = this.estado.datosGenerales.cantidadDormitorios;
+                document.getElementById('cantidadDormitorios').disabled = true;
+            }
+        },
+        
+        // ============================================
+        // GENERACIÓN DE REPORTES (PDF Y EXCEL)
+        // ============================================
+        prepararNuevoDepartamento() {
+            if (this.estado.departamentoActual && 
+                !this.estado.departamentos.some(d => d.numero === this.estado.departamentoActual.numero)) {
+                this.estado.departamentos.push({...this.estado.departamentoActual});
+            }
+            
+            // Limpiar UI
+            document.getElementById('numeroDepto').value = '';
+            document.getElementById('seccionesPreguntas').innerHTML = '';
+            document.getElementById('finalizarContainer').style.display = 'none';
+            document.getElementById('datosGeneralesSection').style.display = 'none';
+            document.getElementById('selectorDeptoSection').style.display = 'block';
+            
+            // Guardar y resetear departamento actual
+            this.guardarAvance();
+            this.estado.departamentoActual = null;
+            
+            // Scroll y focus
+            document.getElementById('selectorDeptoSection').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            document.getElementById('numeroDepto').focus();
+        },
+        
+        generarExcel() {
+            if (this.estado.departamentoActual && 
+                !this.estado.departamentos.some(d => d.numero === this.estado.departamentoActual.numero)) {
+                this.estado.departamentos.push({...this.estado.departamentoActual});
             }
             
             const wb = XLSX.utils.book_new();
             
+            // Hoja 1: Datos generales
             const datosGenerales = [
-                ["Nombre de la Obra", this.datosGenerales.nombreObra],
-                ["Comuna", this.datosGenerales.comuna],
-                ["Empresa Contratista", this.datosGenerales.empresaContratista],
-                ["Entidad Patrocinante", this.datosGenerales.entidadPatrocinante],
-                ["Supervisor", this.datosGenerales.supervisor],
-                ["Director de Obra", this.datosGenerales.directorObra],
-                ["Cantidad de Dormitorios", this.datosGenerales.cantidadDormitorios],
-                ["Fecha de Inspección", new Date().toLocaleDateString()]
+                ['INFORME DE FISCALIZACIÓN DE OBRA'],
+                ['Fecha de generación:', new Date().toLocaleDateString()],
+                ['Hora de generación:', new Date().toLocaleTimeString()],
+                [],
+                ['DATOS GENERALES'],
+                ['Nombre de la Obra:', this.estado.datosGenerales.nombreObra],
+                ['Comuna:', this.estado.datosGenerales.comuna],
+                ['Empresa Contratista:', this.estado.datosGenerales.empresaContratista],
+                ['Entidad Patrocinante:', this.estado.datosGenerales.entidadPatrocinante],
+                ['Supervisor:', this.estado.datosGenerales.supervisor],
+                ['Director de Obra:', this.estado.datosGenerales.directorObra],
+                ['Cantidad de Dormitorios:', this.estado.datosGenerales.cantidadDormitorios],
+                [],
+                ['RESUMEN'],
+                ['Departamentos inspeccionados:', this.estado.departamentos.length],
+                ['Observaciones registradas:', this.estado.observaciones.length]
             ];
+            
             const wsDatos = XLSX.utils.aoa_to_sheet(datosGenerales);
-            XLSX.utils.book_append_sheet(wb, wsDatos, "Datos Generales");
             
-            const respuestas = [["Departamento", "Sección", "Subsección", "Pregunta", "Respuesta", "Observación", "Cantidad Imágenes"]];
-    
-            this.departamentos.forEach(depto => {
-                const obsDepto = this.observaciones.filter(obs => obs.departamento === depto.numero);
-        
-                for (const [seccion, subsecciones] of Object.entries(this.estructura)) {
-                    this.procesarPreguntasParaExcel(respuestas, depto.numero, seccion, subsecciones, obsDepto);
-                }
-            });
-    
-            const wsRespuestas = XLSX.utils.aoa_to_sheet(respuestas);
-            XLSX.utils.book_append_sheet(wb, wsRespuestas, "Respuestas");
-    
-            XLSX.writeFile(wb, `Fiscalizacion_${this.datosGenerales.nombreObra.replace(/ /g, "_")}.xlsx`);
+            // Ajustar anchos de columna
+            const wscols = [{wch: 30}, {wch: 40}];
+            wsDatos['!cols'] = wscols;
+            
+            XLSX.utils.book_append_sheet(wb, wsDatos, 'Datos Generales');
+            
+            // Hoja 2: Observaciones detalladas
+            const encabezados = [
+                'Departamento',
+                'Sección',
+                'Subsección',
+                'Dormitorio',
+                'Pregunta',
+                'Descripción del Problema',
+                'Cantidad de Imágenes',
+                'Fecha'
+            ];
+            
+            const filas = this.estado.observaciones.map(obs => [
+                obs.departamento,
+                obs.seccion,
+                obs.subseccion,
+                obs.dormitorio || 'N/A',
+                obs.preguntaTexto,
+                obs.descripcion,
+                obs.imagenes ? obs.imagenes.length : 0,
+                new Date(obs.fecha).toLocaleDateString()
+            ]);
+            
+            const datosObservaciones = [encabezados, ...filas];
+            const wsObservaciones = XLSX.utils.aoa_to_sheet(datosObservaciones);
+            
+            // Ajustar anchos para la hoja de observaciones
+            const wscolsObs = [
+                {wch: 15}, // Departamento
+                {wch: 25}, // Sección
+                {wch: 25}, // Subsección
+                {wch: 12}, // Dormitorio
+                {wch: 40}, // Pregunta
+                {wch: 50}, // Descripción
+                {wch: 18}, // Cantidad de Imágenes
+                {wch: 15}  // Fecha
+            ];
+            wsObservaciones['!cols'] = wscolsObs;
+            
+            XLSX.utils.book_append_sheet(wb, wsObservaciones, 'Observaciones');
+            
+            // Generar nombre de archivo
+            const nombreArchivo = `Fiscalizacion_${this.estado.datosGenerales.nombreObra.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            
+            XLSX.writeFile(wb, nombreArchivo);
+            this.mostrarNotificacion('Archivo Excel generado correctamente', 'success');
         },
         
-        procesarPreguntasParaExcel: function(respuestas, numeroDepto, seccion, items, obsDepto, subseccion = "") {
-            for (const [item, preguntas] of Object.entries(items)) {
-                if (preguntas === null) {
-                    const observacion = obsDepto.find(obs => obs.pregunta === item);
-                    
-                    respuestas.push([
-                        numeroDepto,
-                        seccion,
-                        subseccion,
-                        item,
-                        observacion ? "No" : "Sí",
-                        observacion ? observacion.descripcion : "",
-                        observacion && observacion.imagenes ? observacion.imagenes.length : 0
-                    ]);
-                } else {
-                    this.procesarPreguntasParaExcel(respuestas, numeroDepto, seccion, preguntas, obsDepto, item);
-                }
-            }
-        },
-        
-        generarPDF: function() {
-            if (this.departamentoActual && !this.departamentos.some(d => d.numero === this.departamentoActual.numero)) {
-                this.departamentos.push({...this.departamentoActual});
+        async generarPDF() {
+            this.mostrarLoading('Generando PDF...');
+            
+            if (this.estado.departamentoActual && 
+                !this.estado.departamentos.some(d => d.numero === this.estado.departamentoActual.numero)) {
+                this.estado.departamentos.push({...this.estado.departamentoActual});
             }
             
-            console.log("Generando PDF. Total observaciones:", this.observaciones.length);
-        
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 15;
+            console.log('Generando PDF. Total observaciones:', this.estado.observaciones.length);
             
-            doc.setFontSize(18);
-            doc.text("Informe de Fiscalización de Obra", pageWidth / 2, 20, { align: "center" });
-            
-            doc.setFontSize(11);
-            doc.text(`Obra: ${this.datosGenerales.nombreObra}`, margin, 35);
-            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, margin, 42);
-            
-            doc.setFontSize(13);
-            doc.text("Datos Generales", margin, 55);
-            doc.setFontSize(10);
-            doc.text(`Nombre: ${this.datosGenerales.nombreObra}`, margin + 5, 63);
-            doc.text(`Comuna: ${this.datosGenerales.comuna}`, margin + 5, 70);
-            doc.text(`Contratista: ${this.datosGenerales.empresaContratista}`, margin + 5, 77);
-            doc.text(`Patrocinante: ${this.datosGenerales.entidadPatrocinante}`, margin + 5, 84);
-            doc.text(`Supervisor: ${this.datosGenerales.supervisor}`, margin + 5, 91);
-            doc.text(`Director: ${this.datosGenerales.directorObra}`, margin + 5, 98);
-        
-            let yPosition = 110;
-            const deptosOrdenados = [...this.departamentos].sort((a, b) => a.numero.localeCompare(b.numero));
-        
-            deptosOrdenados.forEach(depto => {
-                const obsDepto = this.observaciones.filter(obs => obs.departamento === depto.numero);
+            try {
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const margin = 15;
+                let yPosition = margin;
                 
-                console.log(`Departamento ${depto.numero}: ${obsDepto.length} observaciones`);
+                // ============================================
+                // PORTADA
+                // ============================================
+                doc.setFontSize(22);
+                doc.setFont(undefined, 'bold');
+                doc.text('INFORME DE FISCALIZACIÓN DE OBRA', pageWidth / 2, 30, { align: 'center' });
                 
-                if (yPosition > 250) {
+                doc.setFontSize(16);
+                doc.text(this.estado.datosGenerales.nombreObra, pageWidth / 2, 45, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, pageWidth / 2, 60, { align: 'center' });
+                doc.text(`Hora: ${new Date().toLocaleTimeString()}`, pageWidth / 2, 68, { align: 'center' });
+                
+                yPosition = 85;
+                
+                // Línea separadora
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                yPosition += 10;
+                
+                // ============================================
+                // DATOS GENERALES
+                // ============================================
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('1. DATOS GENERALES DE LA OBRA', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                
+                const datos = [
+                    `Nombre de la Obra: ${this.estado.datosGenerales.nombreObra}`,
+                    `Comuna: ${this.estado.datosGenerales.comuna}`,
+                    `Empresa Contratista: ${this.estado.datosGenerales.empresaContratista}`,
+                    `Entidad Patrocinante: ${this.estado.datosGenerales.entidadPatrocinante}`,
+                    `Supervisor - FTO SERVIU: ${this.estado.datosGenerales.supervisor}`,
+                    `Director de Obra: ${this.estado.datosGenerales.directorObra}`,
+                    `Cantidad de Dormitorios: ${this.estado.datosGenerales.cantidadDormitorios}`
+                ];
+                
+                datos.forEach(linea => {
+                    if (yPosition > pageHeight - 20) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    doc.text(linea, margin + 5, yPosition);
+                    yPosition += 7;
+                });
+                
+                yPosition += 5;
+                
+                // ============================================
+                // RESUMEN
+                // ============================================
+                if (yPosition > pageHeight - 30) {
                     doc.addPage();
                     yPosition = margin;
                 }
-        
-                doc.setFontSize(12);
+                
+                doc.setFontSize(14);
                 doc.setFont(undefined, 'bold');
-                doc.text(`DEPARTAMENTO ${depto.numero}`, margin, yPosition);
-                yPosition += 8;
+                doc.text('2. RESUMEN DE INSPECCIÓN', margin, yPosition);
+                yPosition += 10;
+                
+                doc.setFontSize(11);
                 doc.setFont(undefined, 'normal');
-        
-                if (obsDepto.length > 0) {
-                    const observacionesAgrupadas = this.agruparObservacionesPorJerarquia(obsDepto);
-        
-                    for (const [seccion, subsecciones] of Object.entries(observacionesAgrupadas)) {
-                        if (yPosition > 240) {
+                
+                const resumen = [
+                    `Total departamentos inspeccionados: ${this.estado.departamentos.length}`,
+                    `Total observaciones registradas: ${this.estado.observaciones.length}`,
+                    `Fecha de inicio: ${this.estado.departamentos[0]?.fechaInicio ? new Date(this.estado.departamentos[0].fechaInicio).toLocaleDateString() : 'N/A'}`,
+                    `Fecha de término: ${new Date().toLocaleDateString()}`
+                ];
+                
+                resumen.forEach(linea => {
+                    doc.text(linea, margin + 5, yPosition);
+                    yPosition += 7;
+                });
+                
+                yPosition += 10;
+                
+                // ============================================
+                // OBSERVACIONES POR DEPARTAMENTO
+                // ============================================
+                // Agrupar observaciones por departamento
+                const observacionesPorDepto = {};
+                this.estado.observaciones.forEach(obs => {
+                    if (!observacionesPorDepto[obs.departamento]) {
+                        observacionesPorDepto[obs.departamento] = [];
+                    }
+                    observacionesPorDepto[obs.departamento].push(obs);
+                });
+                
+                // Ordenar departamentos
+                const deptosOrdenados = Object.keys(observacionesPorDepto).sort();
+                
+                deptosOrdenados.forEach((depto, indexDepto) => {
+                    if (yPosition > pageHeight - 40) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    
+                    // Título del departamento
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(40, 40, 40);
+                    doc.text(`DEPARTAMENTO ${depto}`, margin, yPosition);
+                    yPosition += 10;
+                    
+                    const observacionesDepto = observacionesPorDepto[depto];
+                    
+                    if (observacionesDepto.length === 0) {
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'normal');
+                        doc.text('Sin observaciones registradas.', margin + 5, yPosition);
+                        yPosition += 15;
+                        return;
+                    }
+                    
+                    // Agrupar por sección
+                    const porSeccion = {};
+                    observacionesDepto.forEach(obs => {
+                        const claveSeccion = obs.seccion + (obs.dormitorio ? ` - Dormitorio ${obs.dormitorio}` : '');
+                        if (!porSeccion[claveSeccion]) {
+                            porSeccion[claveSeccion] = [];
+                        }
+                        porSeccion[claveSeccion].push(obs);
+                    });
+                    
+                    // Procesar cada sección
+                    Object.keys(porSeccion).forEach(seccion => {
+                        if (yPosition > pageHeight - 50) {
                             doc.addPage();
                             yPosition = margin;
                         }
-        
-                        doc.setFontSize(11);
+                        
+                        // Título de sección
+                        doc.setFontSize(12);
                         doc.setFont(undefined, 'bold');
-                        doc.text(seccion, margin, yPosition);
-                        yPosition += 7;
-                        doc.setFont(undefined, 'normal');
-        
-                        for (const [subseccion, preguntas] of Object.entries(subsecciones)) {
-                            if (subseccion && subseccion !== "null") {
-                                if (yPosition > 235) {
-                                    doc.addPage();
-                                    yPosition = margin;
-                                }
-        
-                                doc.setFontSize(10);
-                                doc.text(subseccion, margin + 5, yPosition);
+                        doc.setTextColor(60, 60, 60);
+                        doc.text(seccion, margin + 5, yPosition);
+                        yPosition += 8;
+                        
+                        porSeccion[seccion].forEach(obs => {
+                            if (yPosition > pageHeight - 100) {
+                                doc.addPage();
+                                yPosition = margin;
+                            }
+                            
+                            // Subsección
+                            if (obs.subseccion) {
+                                doc.setFontSize(11);
+                                doc.setFont(undefined, 'bold');
+                                doc.setTextColor(80, 80, 80);
+                                doc.text(obs.subseccion, margin + 10, yPosition);
                                 yPosition += 6;
                             }
-        
-                            for (const [pregunta, observaciones] of Object.entries(preguntas)) {
-                                observaciones.forEach(obs => {
-                                    if (yPosition > 230) {
-                                        doc.addPage();
-                                        yPosition = margin;
-                                    }
-        
-                                    doc.setFontSize(10);
-                                    const preguntaLines = doc.splitTextToSize(pregunta, pageWidth - margin * 2 - 10);
-                                    doc.text(preguntaLines, margin + 10, yPosition);
-                                    yPosition += 6 * preguntaLines.length;
-        
-                                    doc.setFontSize(9);
-                                    const descripcionLines = doc.splitTextToSize(`Observación: ${obs.descripcion}`, pageWidth - margin * 2 - 15);
-                                    doc.text(descripcionLines, margin + 15, yPosition);
-                                    yPosition += 5 * descripcionLines.length + 3;
-        
-                                    if (obs.imagenes && obs.imagenes.length > 0) {
-                                        obs.imagenes.forEach((imagen, imgIndex) => {
-                                            try {
-                                                const imgWidth = (pageWidth - margin * 2) * 0.7;
-                                                const imgHeight = imgWidth * 0.75;
-                                                const espacioNecesario = imgHeight + 20;
+                            
+                            // Pregunta
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'bold');
+                            doc.setTextColor(40, 40, 40);
+                            
+                            const preguntaLines = doc.splitTextToSize(`• ${obs.preguntaTexto}`, pageWidth - margin * 2 - 15);
+                            doc.text(preguntaLines, margin + 15, yPosition);
+                            yPosition += 6 * preguntaLines.length;
+                            
+                            // Descripción
+                            doc.setFontSize(10);
+                            doc.setFont(undefined, 'normal');
+                            doc.setTextColor(60, 60, 60);
+                            
+                            const descLines = doc.splitTextToSize(`Observación: ${obs.descripcion}`, pageWidth - margin * 2 - 20);
+                            doc.text(descLines, margin + 20, yPosition);
+                            yPosition += 5 * descLines.length;
+                            
+                            // Imágenes (si existen)
+                            if (obs.imagenes && obs.imagenes.length > 0) {
+                                yPosition += 5;
 
-                                                if (yPosition + espacioNecesario > pageHeight - margin) {
-                                                    doc.addPage();
-                                                    yPosition = margin;
-                                                }
-                                                
-                                                if (obs.imagenes.length > 1) {
-                                                    doc.setFontSize(8);
-                                                    doc.setTextColor(100, 100, 100);
-                                                    doc.text(`Imagen ${imgIndex + 1} de ${obs.imagenes.length}`, margin + 15, yPosition);
-                                                    yPosition += 5;
-                                                }
-
-                                                doc.addImage(imagen, "JPEG", 
-                                                    (pageWidth - imgWidth) / 2,
-                                                    yPosition, 
-                                                    imgWidth, 
-                                                    imgHeight);
-                                                
-                                                yPosition += imgHeight + 8;
-                                                doc.setTextColor(0, 0, 0);
-                                            } catch (e) {
-                                                console.error("Error al agregar imagen:", e);
-                                                doc.text("(Imagen no disponible)", margin + 15, yPosition);
-                                                yPosition += 6;
-                                            }
-                                        });
+                                obs.imagenes.forEach(imagen => {
+                                    try {
+                                        const imgWidth = (pageWidth - margin * 2) * 0.6;
+                                        const imgHeight = imgWidth * 0.75;
+                                        
+                                        if (yPosition + imgHeight + 10 > pageHeight - margin) {
+                                            doc.addPage();
+                                            yPosition = margin;
+                                        }
+                                        
+                                        doc.addImage(
+                                            imagen,
+                                            'JPEG',
+                                            (pageWidth - imgWidth) / 2,
+                                            yPosition,
+                                            imgWidth,
+                                            imgHeight
+                                        );
+                                        
+                                        yPosition += imgHeight + 10;
+                                        
+                                    } catch (error) {
+                                        console.error('Error agregando imagen al PDF:', error);
+                                        doc.text('(Error al cargar imagen)', margin + 20, yPosition);
+                                        yPosition += 6;
                                     }
-        
-                                    yPosition += 8;
                                 });
                             }
+                            
+                            yPosition += 10;
+                            doc.setTextColor(0, 0, 0);
+                        });
+                        
+                        yPosition += 5;
+                    });
+                    
+                    yPosition += 10;
+                    
+                    // Línea separadora entre departamentos
+                    if (indexDepto < deptosOrdenados.length - 1) {
+                        if (yPosition > pageHeight - 20) {
+                            doc.addPage();
+                            yPosition = margin;
                         }
+                        
+                        doc.setDrawColor(220, 220, 220);
+                        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                        yPosition += 15;
                     }
-                } else {
+                });
+                
+                // ============================================
+                // FIRMAS
+                // ============================================
+                if (yPosition > pageHeight - 80) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('FIRMAS', pageWidth / 2, yPosition, { align: 'center' });
+                yPosition += 20;
+                
+                const firmas = [
+                    { titulo: 'Fiscalizador', nombre: this.estado.datosGenerales.supervisor },
+                    { titulo: 'Director de Obra', nombre: this.estado.datosGenerales.directorObra }
+                ];
+                
+                const colWidth = (pageWidth - margin * 2) / firmas.length;
+                
+                firmas.forEach((firma, index) => {
+                    const xPos = margin + (colWidth * index) + (colWidth / 2);
+                    
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(firma.titulo, xPos, yPosition, { align: 'center' });
+                    
                     doc.setFontSize(10);
-                    doc.text("Sin observaciones", margin + 10, yPosition);
-                    yPosition += 8;
+                    doc.text(firma.nombre, xPos, yPosition + 25, { align: 'center' });
+                    
+                    // Línea para firma
+                    doc.setDrawColor(150, 150, 150);
+                    doc.line(xPos - 40, yPosition + 40, xPos + 40, yPosition + 40);
+                });
+                
+                // ============================================
+                // PIE DE PÁGINA
+                // ============================================
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(
+                        `Página ${i} de ${totalPages} • Generado el ${new Date().toLocaleDateString()}`,
+                        pageWidth / 2,
+                        pageHeight - 10,
+                        { align: 'center' }
+                    );
                 }
                 
-                yPosition += 10;
-            });
-        
-            doc.save(`Informe_Fiscalizacion_${this.datosGenerales.nombreObra.replace(/ /g, "_")}.pdf`);
-            this.generarExcel();
-            this.resetearAplicacion();
-        },
-        
-        agruparObservacionesPorJerarquia: function(observaciones) {
-            const agrupadas = {};
-            
-            observaciones.forEach(obs => {
-                const jerarquia = this.encontrarJerarquiaDePregunta(obs.pregunta);
+                // ============================================
+                // GUARDAR PDF
+                // ============================================
+                const nombrePDF = `Informe_Fiscalizacion_${this.estado.datosGenerales.nombreObra.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
+                doc.save(nombrePDF);
                 
-                if (jerarquia) {
-                    const [seccion, subseccion] = jerarquia;
-                    
-                    if (!agrupadas[seccion]) {
-                        agrupadas[seccion] = {};
-                    }
-                    
-                    const subseccionKey = subseccion || "null";
-                    
-                    if (!agrupadas[seccion][subseccionKey]) {
-                        agrupadas[seccion][subseccionKey] = {};
-                    }
-                    
-                    if (!agrupadas[seccion][subseccionKey][obs.pregunta]) {
-                        agrupadas[seccion][subseccionKey][obs.pregunta] = [];
-                    }
-                    
-                    agrupadas[seccion][subseccionKey][obs.pregunta].push(obs);
-                }
-            });
-            
-            return agrupadas;
-        },
-        
-        encontrarJerarquiaDePregunta: function(preguntaBuscada) {
-            for (const [seccion, subsecciones] of Object.entries(this.estructura)) {
-                for (const [subseccion, preguntas] of Object.entries(subsecciones)) {
-                    if (typeof preguntas === 'object' && preguntas !== null) {
-                        for (const [pregunta] of Object.entries(preguntas)) {
-                            if (pregunta === preguntaBuscada) {
-                                return [seccion, subseccion];
-                            }
-                        }
-                    } else if (subseccion === preguntaBuscada) {
-                        return [seccion, null];
-                    }
-                }
+                // Generar Excel también
+                this.generarExcel();
+                
+                this.mostrarNotificacion('PDF generado correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                this.mostrarNotificacion('Error al generar el PDF', 'danger');
+            } finally {
+                this.ocultarLoading();
+                this.resetearAplicacion();
             }
-            return null;
         },
         
-        resetearAplicacion: function() {
-            this.datosGenerales = {};
-            this.departamentos = [];
-            this.departamentoActual = null;
-            this.observaciones = [];
+        // ============================================
+        // RESET Y LIMPIEZA
+        // ============================================
+        resetearAplicacion() {
+            // Guardar datos actuales temporalmente
+            const datosTemporales = {
+                datosGenerales: { ...this.estado.datosGenerales },
+                observacionesCount: this.estado.observaciones.length,
+                departamentosCount: this.estado.departamentos.length
+            };
             
-            document.getElementById("nombreObra").value = "";
-            document.getElementById("comuna").value = "";
-            document.getElementById("empresaContratista").value = "";
-            document.getElementById("entidadPatrocinante").value = "";
-            document.getElementById("supervisor").value = "";
-            document.getElementById("directorObra").value = "";
-            document.getElementById("numeroDepto").value = "";
+            // Resetear estado
+            this.estado.datosGenerales = {};
+            this.estado.departamentos = [];
+            this.estado.departamentoActual = null;
+            this.estado.observaciones = [];
+            this.estado.imagenesTemporales = [];
+            this.estado.preguntaActual = null;
             
-            document.getElementById("nombreObra").disabled = false;
-            document.getElementById("comuna").disabled = false;
-            document.getElementById("empresaContratista").disabled = false;
-            document.getElementById("entidadPatrocinante").disabled = false;
-            document.getElementById("supervisor").disabled = false;
-            document.getElementById("directorObra").disabled = false;
-            document.getElementById("cantidadDormitorios").disabled = false;
+            // Resetear UI
+            const campos = [
+                'nombreObra', 'comuna', 'empresaContratista',
+                'entidadPatrocinante', 'supervisor', 'directorObra',
+                'numeroDepto'
+            ];
             
-            document.getElementById("datosGeneralesSection").style.display = "block";
-            document.getElementById("selectorDeptoSection").style.display = "block";
-            document.getElementById("seccionesPreguntas").innerHTML = "";
-            document.getElementById("finalizarContainer").style.display = "none";
-
-            localStorage.removeItem('fiscalizacionObra');
+            campos.forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) {
+                    elem.value = '';
+                    elem.disabled = false;
+                }
+            });
+            
+            document.getElementById('cantidadDormitorios').value = '1';
+            document.getElementById('cantidadDormitorios').disabled = false;
+            
+            document.getElementById('datosGeneralesSection').style.display = 'block';
+            document.getElementById('selectorDeptoSection').style.display = 'block';
+            document.getElementById('seccionesPreguntas').innerHTML = '';
+            document.getElementById('finalizarContainer').style.display = 'none';
+            
+            // Limpiar localStorage
+            localStorage.removeItem(this.CONFIG.STORAGE_KEY);
+            
+            // Mostrar resumen
+            setTimeout(() => {
+                this.mostrarNotificacion(
+                    `✅ Inspección finalizada. Se procesaron ${datosTemporales.departamentosCount} departamentos con ${datosTemporales.observacionesCount} observaciones.`,
+                    'success'
+                );
+            }, 1000);
             
             window.scrollTo(0, 0);
         }
-
     };
     
-    app.init();
+    // Inicializar aplicación
+    FiscalizadorApp.init();
 });
-
