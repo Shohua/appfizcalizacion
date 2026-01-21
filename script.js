@@ -546,7 +546,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Cambiar color según cantidad
             const strongElem = contador.querySelector('strong');
             if (this.estado.imagenesTemporales.length === 0) {
-                strongElem.style.color = '#dc3545';
+                strongElem.style.color = 'inherit';
             } else if (this.estado.imagenesTemporales.length >= 3) {
                 strongElem.style.color = '#28a745';
             } else {
@@ -598,11 +598,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (!descripcion) {
                 this.mostrarNotificacion('Por favor ingresa una descripción del problema', 'warning');
-                return;
-            }
-            
-            if (this.estado.imagenesTemporales.length === 0) {
-                this.mostrarNotificacion('Por favor agrega al menos una imagen', 'warning');
                 return;
             }
             
