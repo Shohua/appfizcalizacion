@@ -1,0 +1,143 @@
+﻿id;section;subsection;question;order
+A01;A. COCINA;01. Muro;¿Están nivelados los muros?;1
+A02;A. COCINA;01. Muro;¿Presentan grietas o fisuras?;2
+A03;A. COCINA;01. Muro;¿El acabado es uniforme y sin imperfecciones?;3
+A04;A. COCINA;02. Tabiquería;¿La tabiquería está correctamente instalada?;1
+A05;A. COCINA;02. Tabiquería;¿Hay daños visibles en la tabiquería?;2
+A06;A. COCINA;02. Tabiquería;¿Presenta alineación correcta?;3
+A07;A. COCINA;03. Cielo;¿El cielo presenta grietas o imperfecciones?;1
+A08;A. COCINA;03. Cielo;¿Está nivelado y uniforme?;2
+A09;A. COCINA;04. Corniza;¿La corniza está bien instalada y nivelada?;1
+A10;A. COCINA;04. Corniza;¿Presenta daños o faltantes?;2
+A11;A. COCINA;05. Pintura Esmalte Cielo - Muro;¿La pintura está uniforme sin manchas o faltantes?;1
+A12;A. COCINA;05. Pintura Esmalte Cielo - Muro;¿El color es el especificado?;2
+A13;A. COCINA;06. Cerámica - Frague Muro;¿Las cerámicas están correctamente instaladas?;1
+A14;A. COCINA;06. Cerámica - Frague Muro;¿El fragüe es uniforme y completo?;2
+A15;A. COCINA;07. Cerámica - Frague Piso;¿Las cerámicas del piso están bien instaladas?;1
+A16;A. COCINA;07. Cerámica - Frague Piso;¿El fragüe es uniforme y sin faltantes?;2
+A17;A. COCINA;08. Enchufes - Interruptores;¿Los enchufes funcionan correctamente?;1
+A18;A. COCINA;08. Enchufes - Interruptores;¿Los interruptores operan bien?;2
+A19;A. COCINA;09. Puerta y marco;¿El marco está bien instalado?;1
+A20;A. COCINA;09. Puerta y marco;¿La pintura de la puerta está bien aplicada?;2
+A21;A. COCINA;09. Puerta y marco;¿Las bisagras 3x3 funcionan correctamente?;3
+A22;A. COCINA;09. Puerta y marco;¿La cerradura funciona bien?;4
+A23;A. COCINA;09. Puerta y marco;¿La celosia está bien instalada?;5
+A24;A. COCINA;09. Puerta y marco;¿El tope de puerta está instalado?;6
+A25;A. COCINA;09. Puerta y marco;¿El burlete esta bien instalado?;7
+A26;A. COCINA;10. Centro de Luz;¿El centro de luz funciona correctamente?;1
+A27;A. COCINA;10. Centro de Luz;¿Está bien instalado y seguro?;2
+A28;A. COCINA;10. Centro de Luz;¿las Tapa ciegas estan correctamente instaladas?;3
+A29;A. COCINA;11. Extractor;¿El extractor funciona correctamente?;1
+A30;A. COCINA;11. Extractor;¿Está bien instalado y sin fugas?;2
+A31;A. COCINA;12. Mueble - Lavaplatos;¿El sello del lavaplatos está completo y sin fugas?;1
+A32;A. COCINA;12. Mueble - Lavaplatos;¿El lavaplatos está bien instalado?;2
+A33;A. COCINA;13. Grifería Lavaplatos;¿La grifería funciona correctamente sin fugas?;1
+A34;A. COCINA;14. Sifón Lavaplatos;¿El sifón está bien instalado y sin fugas?;1
+A35;A. COCINA;16. Llave de Corte;¿La llave de corte funciona correctamente?;1
+A36;A. COCINA;17 . Red de Gas;¿La instalación de gas está correcta y sin fugas?;1
+A37;A. COCINA;18. Limpieza;¿El área está completamente limpia?;1
+A38;A. COCINA;19. Otros;¿Hay otros aspectos a señalar en esta área?;1
+B01;B. LOGIA;01. Muro;¿Los muros están nivelados y sin daños?;1
+B02;B. LOGIA;02. Tabiquería;¿La tabiquería está correctamente instalada?;1
+B03;B. LOGIA;03. Cielo;¿El cielo está en buen estado?;1
+B04;B. LOGIA;04. Corniza;¿La corniza está bien instalada?;1
+B05;B. LOGIA;06. Cerámica - Frague Muro;¿Las cerámicas están bien instaladas?;1
+B06;B. LOGIA;06. Cerámica - Frague Muro;¿El fragüe es uniforme y completo?;2
+B07;B. LOGIA;07. Cerámica - Frague Piso;¿El piso cerámico está en buen estado?;1
+B08;B. LOGIA;07. Cerámica - Frague Piso;¿El fragüe es uniforme y sin faltantes?;2
+B09;B. LOGIA;08. Enchufes - Interruptores;¿Los enchufes funcionan bien?;1
+B10;B. LOGIA;08. Enchufes - Interruptores;¿Los interruptores operan bien?;2
+B11;B. LOGIA;09. Centro de Luz;¿El centro de luz funciona correctamente?;1
+B12;B. LOGIA;16. Lavadero - Sello;¿El sello del lavadero está completo?;1
+B13;B. LOGIA;17. Llaves Lavadero AF - AC;¿Las llaves funcionan correctamente?;1
+B14;B. LOGIA;18. Sifon Lavadero;¿El sifón está bien instalado?;1
+B15;B. LOGIA;19. Llaves Lavadora AF - AC;¿Las llaves funcionan correctamente?;1
+B16;B. LOGIA;20. Descarga Lavadora;¿La descarga funciona bien?;1
+B17;B. LOGIA;21. Llave de Corte;¿La llave de corte funciona?;1
+B18;B. LOGIA;22. Calefont;¿El calefont funciona correctamente?;1
+B19;B. LOGIA;23. Red de Gas;¿La instalación de gas está correcta?;1
+B20;B. LOGIA;25. Limpieza;¿El área está limpia?;1
+B21;B. LOGIA;26. Otros;¿Hay otros aspectos a señalar?;1
+C01;C. ESTAR COMEDOR;01. Muro;¿Los muros están en buen estado?;1
+C02;C. ESTAR COMEDOR;02. Tabiquería;¿La tabiquería está correcta?;1
+C03;C. ESTAR COMEDOR;03. Cielo;¿El cielo está en buen estado?;1
+C04;C. ESTAR COMEDOR;04. Piso - Recubrimiento;¿El piso está en buen estado?;1
+C05;C. ESTAR COMEDOR;05. Corniza;¿La corniza está bien instalada?;1
+C06;C. ESTAR COMEDOR;06. Ventanal;¿El ventanal está bien sellado?;1
+C07;C. ESTAR COMEDOR;06. Ventanal;¿El burlete esta bien instalado?;2
+C08;C. ESTAR COMEDOR;09. Puerta y marco;¿El marco está bien instalado?;1
+C09;C. ESTAR COMEDOR;09. Puerta y marco;¿La pintura de la puerta está bien aplicada?;2
+C10;C. ESTAR COMEDOR;09. Puerta y marco;¿Las bisagras 3x3 funcionan correctamente?;3
+C11;C. ESTAR COMEDOR;09. Puerta y marco;¿La cerradura funciona bien?;4
+C12;C. ESTAR COMEDOR;09. Puerta y marco;¿La celosia está bien instalada?;5
+C13;C. ESTAR COMEDOR;09. Puerta y marco;¿El tope de puerta está instalado?;6
+C14;C. ESTAR COMEDOR;09. Puerta y marco;¿El burlete esta bien instalado?;7
+C15;C. ESTAR COMEDOR;15. Enchufes - Interruptores;¿Los enchufes funcionan bien?;1
+C16;C. ESTAR COMEDOR;15. Enchufes - Interruptores;¿Los interruptores operan bien?;2
+C17;C. ESTAR COMEDOR;16. Centro de Luz;¿El centro de luz funciona?;1
+C18;C. ESTAR COMEDOR;16. Centro de Luz;¿las Tapa ciegas estan correctamente instaladas?;2
+C19;C. ESTAR COMEDOR;17. Tablero Eléctrico;¿El tablero eléctrico está correcto?;1
+C20;C. ESTAR COMEDOR;18. Limpieza;¿El área está limpia?;1
+C21;C. ESTAR COMEDOR;19. Otros;¿Hay otros aspectos a señalar?;1
+D01;D. TERRAZA;01. Muro;¿El muro esta en buen estado?;1
+D02;D. TERRAZA;02. Tabiquería;¿La tabiquería está correcta?;1
+D03;D. TERRAZA;03. Cielo;¿El cielo está en buen estado?;1
+D04;D. TERRAZA;04. Cerámica Piso;¿El piso cerámico está bien instalado?;1
+D05;D. TERRAZA;16. Centro de Luz;¿El centro de luz funciona?;1
+D06;D. TERRAZA;16. Centro de Luz;¿las Tapa ciegas estan correctamente instaladas?;2
+D07;D. TERRAZA;07. Pintura Muro;¿La pintura está bien aplicada?;1
+D08;D. TERRAZA;08. Baranda;¿La baranda está bien instalada y segura?;1
+D09;D. TERRAZA;18. Limpieza;¿El área está limpia?;1
+D10;D. TERRAZA;19. Otros;¿Hay otros aspectos a señalar?;1
+E01;E. BAÑO;01. Muro;¿Los muros están en buen estado?;1
+E02;E. BAÑO;02. Tabiquería;¿La tabiquería está correcta?;1
+E03;E. BAÑO;03. Cielo;¿El cielo está en buen estado?;1
+E04;E. BAÑO;04. Corniza;¿La corniza está bien instalada?;1
+E05;E. BAÑO;05. Pintura Esmalte Cielo - Muro;¿La pintura está bien aplicada?;1
+E06;E. BAÑO;06. Cerámica - Frague Muro;¿Las cerámicas están correctamente instaladas?;1
+E07;E. BAÑO;06. Cerámica - Frague Muro;¿El fragüe es uniforme y completo?;2
+E08;E. BAÑO;07. Cerámica - Frague Piso;¿Las cerámicas del piso están bien instaladas?;3
+E09;E. BAÑO;07. Cerámica - Frague Piso;¿El fragüe es uniforme y sin faltantes?;4
+E10;E. BAÑO;09. Puerta y marco;¿La puerta con celosia funciona correctamente?;1
+E11;E. BAÑO;09. Puerta y marco;¿El marco está bien instalado?;2
+E12;E. BAÑO;09. Puerta y marco;¿La pintura de la puerta está bien aplicada?;3
+E13;E. BAÑO;09. Puerta y marco;¿Las bisagras 3x3 funcionan correctamente?;4
+E14;E. BAÑO;09. Puerta y marco;¿La cerradura funciona bien?;5
+E15;E. BAÑO;09. Puerta y marco;¿La celosia está bien instalada?;6
+E16;E. BAÑO;09. Puerta y marco;¿El tope de puerta está instalado?;7
+E17;E. BAÑO;09. Puerta y marco;¿El burlete esta bien instalado?;8
+E18;E. BAÑO;15. Enchufe - Interruptor;¿Los enchufes funcionan?;1
+E19;E. BAÑO;15. Enchufe - Interruptor;¿Los interruptores operan bien?;2
+E20;E. BAÑO;16. Centro de Luz;¿El centro de luz funciona?;1
+E21;E. BAÑO;17. Extractor;¿El extractor funciona correctamente?;1
+E22;E. BAÑO;18. Tina;¿La tina está bien sellada?;1
+E23;E. BAÑO;18. Tina;¿esta bien instalada la celosia?;2
+E24;E. BAÑO;18. Tina;¿La grifería funciona sin fugas?;3
+E25;E. BAÑO;20. WC;¿El WC está bien sellado?;1
+E26;E. BAÑO;20. WC;¿La llave angular funciona?;2
+E27;E. BAÑO;22. Lavamanos;¿El lavamanos está bien sellado?;1
+E28;E. BAÑO;22. Lavamanos;¿La llave de corte funciona?;2
+E29;E. BAÑO;22. Lavamanos;¿La grifería funciona sin fugas?;3
+E30;E. BAÑO;23. Accesorios - Toallero - Jabonera - Porta Papel;¿Los accesorios están bien instalados?;1
+E31;E. BAÑO;24. Celosia;¿La celosía funciona correctamente?;1
+E32;E. BAÑO;26. Limpieza;¿El baño está completamente limpio?;1
+E33;E. BAÑO;27. Otros;¿Hay otros aspectos a señalar?;1
+F01;F. DORMITORIO;01. Muro;¿Los muros están en buen estado?;1
+F02;F. DORMITORIO;02. Tabiquería;¿La tabiquería está correcta?;1
+F03;F. DORMITORIO;03. Cielo;¿El cielo está en buen estado?;1
+F04;F. DORMITORIO;04. Piso;¿El piso está en buen estado?;1
+F05;F. DORMITORIO;05. Corniza;¿La corniza está bien instalada?;1
+F06;F. DORMITORIO;06. Ventana;¿La ventana está bien sellada?;1
+F07;F. DORMITORIO;09. Puerta y marco;¿La puerta funciona correctamente?;1
+F08;F. DORMITORIO;09. Puerta y marco;¿El marco está bien instalado?;2
+F09;F. DORMITORIO;09. Puerta y marco;¿Las bisagras 3x3 funcionan correctamente?;3
+F10;F. DORMITORIO;09. Puerta y marco;¿La cerradura funciona bien?;4
+F11;F. DORMITORIO;09. Puerta y marco;¿El tope de puerta está instalado?;5
+F12;F. DORMITORIO;13. Ventilación Jonas;¿La ventilación funciona correctamente?;1
+F13;F. DORMITORIO;14. Enchufes - Interruptor;¿Los enchufes funcionan?;1
+F14;F. DORMITORIO;14. Enchufes - Interruptor;¿Los interruptores operan bien?;2
+F15;F. DORMITORIO;15. Centro de Luz;¿El centro de luz funciona?;1
+F16;F. DORMITORIO;16. Limpieza;¿El dormitorio está completamente limpio?;1
+F17;F. DORMITORIO;17. Otros;¿Hay otros aspectos a señalar?;1
+O01;OBSERVACIONES GENERALES;;01. Observaciones adicionales;1
+O02;OBSERVACIONES GENERALES;;02. Comentarios finales;1
