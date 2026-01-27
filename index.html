@@ -250,6 +250,45 @@
             </div>
         </div>
 
+        <!-- Sección de Selección de Cuestionario -->
+        <div class="card mb-4" id="cuestionarioSection">
+            <div class="card-header bg-secondary text-white">
+                <i class="bi bi-file-earmark-ruled"></i> Selección de Cuestionario
+            </div>
+            <div class="card-body">
+                <p>Seleccione el cuestionario a utilizar para la fiscalización.</p>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="cuestionarioOpcion" id="cuestionarioPorDefecto" value="default" checked>
+                    <label class="form-check-label" for="cuestionarioPorDefecto">
+                        Usar cuestionario por defecto
+                    </label>
+                </div>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="cuestionarioOpcion" id="cuestionarioPersonalizado" value="custom">
+                    <label class="form-check-label" for="cuestionarioPersonalizado">
+                        Usar cuestionario personalizado
+                    </label>
+                </div>
+
+                <div id="controlesPersonalizado" class="mt-3" style="display: none;">
+                    <div class="mb-3">
+                        <label for="csvFileInput" class="form-label">Subir archivo CSV:</label>
+                        <input class="form-control" type="file" id="csvFileInput" accept=".csv">
+                        <div id="csvFileName" class="form-text text-success mt-2" style="display: none;"></div>
+                        <div class="form-text">El archivo debe tener las columnas: id, section, subsection, question, order.</div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button class="btn btn-outline-info btn-sm" id="descargarCsvActual">
+                        <i class="bi bi-download"></i> Descargar Cuestionario Actual
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Selector de Departamento -->
         <div class="card mb-4" id="selectorDeptoSection">
             <div class="card-header bg-primary text-white">
