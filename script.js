@@ -1030,21 +1030,103 @@ document.addEventListener("DOMContentLoaded", function() {
                     yPosition += 7;
                 });
                 yPosition += 5;
-                
-                // ... (El resto de la generación del PDF sigue igual)
+
+                // SECCIÓN DE OBSERVACIONES
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('2. OBSERVACIONES REGISTRADAS', margin, yPosition);
+                yPosition += 10;
+
+                if (this.estado.observaciones.length === 0) {
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'normal');
+                    doc.text('No se registraron observaciones.', margin + 5, yPosition);
+                    yPosition += 10;
+                } else {
+                    for (const [index, obs] of this.estado.observaciones.entries()) {
+                        if (yPosition > pageHeight - 60) { // Check space for new entry
+                            doc.addPage();
+                            yPosition = margin;
+                        }
+
+                        doc.setFontSize(12);
+                        doc.setFont(undefined, 'bold');
+                        const tituloObs = `Observación ${index + 1}: Depto ${obs.departamento}`;
+                        doc.text(tituloObs, margin, yPosition);
+                        yPosition += 7;
+
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, 'normal');
+
+                        let jerarquia = `Sección: ${obs.seccion}`;
+                        if (obs.subseccion) jerarquia += ` > Subsección: ${obs.subseccion}`;
+                        if (obs.dormitorio) jerarquia += ` > Dormitorio: ${obs.dormitorio}`;
+                        doc.text(jerarquia, margin + 5, yPosition);
+                        yPosition += 6;
+
+                        doc.setFont(undefined, 'italic');
+                        const preguntaLines = doc.splitTextToSize(`Pregunta: ${obs.preguntaTexto}`, pageWidth - margin * 3);
+                        doc.text(preguntaLines, margin + 5, yPosition);
+                        yPosition += preguntaLines.length * 5;
+
+                        doc.setFont(undefined, 'bold');
+                        doc.text('Descripción del Problema:', margin + 5, yPosition);
+                        yPosition += 6;
+                        
+                        doc.setFont(undefined, 'normal');
+                        const descLines = doc.splitTextToSize(obs.descripcion, pageWidth - margin * 3);
+                        doc.text(descLines, margin + 5, yPosition);
+                        yPosition += descLines.length * 5 + 4;
+
+                        if (obs.imagenes && obs.imagenes.length > 0) {
+                            doc.setFont(undefined, 'bold');
+                            doc.text(`Evidencia Fotográfica (${obs.imagenes.length}):`, margin + 5, yPosition);
+                            yPosition += 8;
+
+                            for (const imgData of obs.imagenes) {
+                                const imgProps = doc.getImageProperties(imgData);
+                                const aspectRatio = imgProps.width / imgProps.height;
+                                let imgWidth = 80; // Ancho fijo para las imágenes
+                                let imgHeight = imgWidth / aspectRatio;
+
+                                if (yPosition + imgHeight > pageHeight - 20) {
+                                    doc.addPage();
+                                    yPosition = margin;
+                                }
+
+                                doc.addImage(imgData, 'JPEG', margin + 10, yPosition, imgWidth, imgHeight);
+                                yPosition += imgHeight + 8;
+                            }
+                        }
+
+                        // Línea divisoria
+                        if (index < this.estado.observaciones.length - 1) {
+                            yPosition += 5;
+                            if (yPosition > pageHeight - 15) {
+                                doc.addPage();
+                                yPosition = margin;
+                            }
+                            doc.setLineDashPattern([1, 1], 0);
+                            doc.line(margin, yPosition, pageWidth - margin, yPosition);
+                            doc.setLineDashPattern([], 0);
+                            yPosition += 10;
+                        }
+                    }
+                }
                 
                 const nombrePDF = `Informe_Fiscalizacion_${this.estado.datosGenerales.nombreObra.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`;
                 doc.save(nombrePDF);
                 
                 this.generarExcel();
                 this.mostrarNotificacion('PDF y Excel generados correctamente', 'success');
+
+                this.ocultarLoading();
+                this.resetearAplicacion();
                 
             } catch (error) {
                 console.error('Error generando PDF:', error);
                 this.mostrarNotificacion('Error al generar el PDF', 'danger');
-            } finally {
                 this.ocultarLoading();
-                this.resetearAplicacion();
             }
         },
         
