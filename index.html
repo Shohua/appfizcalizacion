@@ -9,197 +9,37 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { padding: 20px; font-family: Arial, sans-serif; background-color: #f8f9fa; }
-        .section { 
-            margin-bottom: 25px; 
-            border: 1px solid #dee2e6; 
-            padding: 20px; 
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .section h3 { 
-            color: #2c3e50; 
-            border-bottom: 2px solid #3498db; 
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-        }
-        .question { 
-            margin-bottom: 18px; 
-            padding-bottom: 18px; 
-            border-bottom: 1px solid #ecf0f1; 
-        }
+        .section { margin-bottom: 25px; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .section h3 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; margin-bottom: 20px; }
+        .question { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #ecf0f1; }
         .question:last-child { border-bottom: none; }
         .subquestion { margin-left: 25px; }
-        .form-control:disabled, .form-select:disabled { 
-            background-color: #f8f9fa; 
-            opacity: 0.7;
-        }
-        .saved-badge {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: none;
-            animation: fadeInOut 3s ease-in-out;
-        }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(10px); }
-            20% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(10px); }
-        }
-        .thumbnail-container {
-            position: relative;
-            display: inline-block;
-            margin: 8px;
-            transition: transform 0.2s;
-        }
-        .thumbnail-img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .thumbnail-img:hover {
-            border-color: #3498db;
-            transform: scale(1.05);
-        }
-        .btn-eliminar-img {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #e74c3c;
-            color: white;
-            border: 2px solid white;
-            cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .btn-eliminar-img:hover {
-            background: #c0392b;
-            transform: scale(1.1);
-        }
-        .card-header {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        .progress {
-            height: 8px;
-            margin-bottom: 20px;
-        }
-        #contadorImagenes {
-            font-size: 0.9rem;
-        }
-        .modal-content {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .modal-header {
-            background: #3498db;
-            color: white;
-        }
-        .btn-primary {
-            background: #3498db;
-            border-color: #3498db;
-        }
-        .btn-primary:hover {
-            background: #2980b9;
-            border-color: #2980b9;
-        }
-        .btn-success {
-            background: #27ae60;
-            border-color: #27ae60;
-        }
-        .btn-info {
-            background: #17a2b8;
-            border-color: #17a2b8;
-        }
-        .alert-success {
-            background: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        .alert-info {
-            background: #d1ecf1;
-            border-color: #bee5eb;
-            color: #0c5460;
-        }
-        .pregunta-texto {
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-        .badge-seccion {
-            background: #3498db;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            margin-right: 8px;
-        }
-        .badge-subseccion {
-            background: #95a5a6;
-            color: white;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 0.8rem;
-        }
-        .imagen-preview {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .depto-titulo {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        .depto-titulo h2 {
-            margin: 0;
-            font-weight: 600;
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            display: none;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        .form-control:disabled, .form-select:disabled { background-color: #f8f9fa; opacity: 0.7; }
+        .saved-badge { position: fixed; bottom: 20px; right: 90px; z-index: 1000; display: none; animation: fadeInOut 3s ease-in-out; }
+        @keyframes fadeInOut { 0%{opacity:0;transform:translateY(10px)} 20%{opacity:1;transform:translateY(0)} 80%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(10px)} }
+        .thumbnail-container { position: relative; display: inline-block; margin: 8px; }
+        .thumbnail-img { width: 120px; height: 120px; object-fit: cover; border: 2px solid #dee2e6; border-radius: 6px; cursor: pointer; transition: all 0.3s; }
+        .thumbnail-img:hover { border-color: #3498db; transform: scale(1.05); }
+        .btn-eliminar-img { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; background: #e74c3c; color: white; border: 2px solid white; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn-eliminar-img:hover { background: #c0392b; transform: scale(1.1); }
+        .card-header { font-weight: 600; font-size: 1.1rem; }
+        .progress { height: 8px; margin-bottom: 20px; }
+        #contadorImagenes { font-size: 0.9rem; }
+        .modal-content { border-radius: 10px; overflow: hidden; }
+        .modal-header { background: #3498db; color: white; }
+        .btn-primary { background: #3498db; border-color: #3498db; }
+        .btn-primary:hover { background: #2980b9; border-color: #2980b9; }
+        .btn-success { background: #27ae60; border-color: #27ae60; }
+        .btn-info { background: #17a2b8; border-color: #17a2b8; }
+        .alert-success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .alert-info { background: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .pregunta-texto { font-weight: 500; margin-bottom: 8px; color: #2c3e50; }
+        .imagen-preview { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .depto-titulo { background: linear-gradient(135deg, #3498db, #2c3e50); color: white; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: center; }
+        .depto-titulo h2 { margin: 0; font-weight: 600; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); justify-content: center; align-items: center; z-index: 9999; display: none; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
     </style>
 </head>
 <body>
@@ -210,11 +50,27 @@
         <p class="mt-3 text-muted" id="loadingText">Procesando...</p>
     </div>
 
-    <!-- Indicador de dictado de voz (global, siempre visible cuando activo) -->
-    <div id="voice-indicator">
-        <div class="voice-pulse"></div>
-        <span id="voice-indicator-text">Escuchando… hable ahora</span>
+    <!-- ══════════════════════════════════════════════
+         PANEL FLOTANTE DE VOZ MANOS LIBRES
+         Siempre visible durante la inspección.
+         ══════════════════════════════════════════════ -->
+    <div class="voz-panel" id="vozPanel">
+        <div class="voz-icono">🎙️</div>
+        <p class="voz-titulo" id="vozTitulo">Escuchando comandos…</p>
+        <p class="voz-subtitulo" id="vozSubtitulo">Di "iniciar" para grabar una observación</p>
+        <!-- Texto transcrito en tiempo real (solo en modo dictado) -->
+        <div id="vozTextoVivo" style="display:none;"></div>
+        <!-- Botones de respaldo (para uso con pantalla) -->
+        <div class="voz-panel-controles" id="vozControles">
+            <button class="voz-btn voz-btn-iniciar"  id="vozBtnIniciar">▶ Iniciar</button>
+            <button class="voz-btn voz-btn-guardar"  id="vozBtnGuardar"  style="display:none;">💾 Guardar</button>
+            <button class="voz-btn voz-btn-cancelar" id="vozBtnCancelar" style="display:none;">✕ Cancelar</button>
+            <button class="voz-btn voz-btn-cerrar"   id="vozBtnCerrar">✕ Cerrar</button>
+        </div>
     </div>
+
+    <!-- FAB flotante para abrir/cerrar voz libre -->
+    <button id="btnVozLibre" title="Dictado manos libres">🎙️</button>
 
     <div class="container-fluid">
         <h1 class="mb-4">
@@ -268,28 +124,21 @@
             </div>
         </div>
 
-        <!-- Sección de Selección de Cuestionario -->
+        <!-- Cuestionario -->
         <div class="card mb-4" id="cuestionarioSection">
             <div class="card-header bg-secondary text-white">
                 <i class="bi bi-file-earmark-ruled"></i> Selección de Cuestionario
             </div>
             <div class="card-body">
                 <p>Seleccione el cuestionario a utilizar para la fiscalización.</p>
-                
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="cuestionarioOpcion" id="cuestionarioPorDefecto" value="default" checked>
-                    <label class="form-check-label" for="cuestionarioPorDefecto">
-                        Usar cuestionario por defecto
-                    </label>
+                    <label class="form-check-label" for="cuestionarioPorDefecto">Usar cuestionario por defecto</label>
                 </div>
-                
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="cuestionarioOpcion" id="cuestionarioPersonalizado" value="custom">
-                    <label class="form-check-label" for="cuestionarioPersonalizado">
-                        Usar cuestionario personalizado
-                    </label>
+                    <label class="form-check-label" for="cuestionarioPersonalizado">Usar cuestionario personalizado</label>
                 </div>
-
                 <div id="controlesPersonalizado" class="mt-3" style="display: none;">
                     <div class="mb-3">
                         <label for="csvFileInput" class="form-label">Subir archivo CSV:</label>
@@ -298,7 +147,6 @@
                         <div class="form-text">El archivo debe tener las columnas: id, section, subsection, question, order.</div>
                     </div>
                 </div>
-
                 <div class="mt-3">
                     <button class="btn btn-outline-info btn-sm" id="descargarCsvActual">
                         <i class="bi bi-download"></i> Descargar Cuestionario Actual
@@ -307,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Selector de Departamento -->
+        <!-- Selector Departamento -->
         <div class="card mb-4" id="selectorDeptoSection">
             <div class="card-header bg-primary text-white">
                 <i class="bi bi-door-closed"></i> Departamento
@@ -341,13 +189,29 @@
             </div>
         </div>
 
-        <!-- Progress bar (se mostrará dinámicamente) -->
+        <!-- Progress bar -->
         <div class="progress" id="progressBar" style="display: none;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                 role="progressbar" style="width: 0%"></div>
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
         </div>
 
-        <!-- Secciones de Preguntas (se llenará dinámicamente) -->
+        <!-- ══════════════════════════════════════════
+             BANDEJA DE OBSERVACIONES PENDIENTES
+             (observaciones dictadas sin sección clara)
+             ══════════════════════════════════════════ -->
+        <div id="bandejaPendientes" class="card mb-4">
+            <div class="card-header bg-warning text-dark d-flex align-items-center justify-content-between">
+                <span>
+                    <i class="bi bi-inbox"></i> Observaciones pendientes de asignar
+                    <span class="badge bg-dark ms-2" id="bandejaCount">0</span>
+                </span>
+                <small class="text-muted">Dictadas por voz sin sección detectada</small>
+            </div>
+            <div class="card-body" id="bandejaTarjetas">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Secciones de Preguntas -->
         <div id="seccionesPreguntas"></div>
 
         <!-- Botones Finales -->
@@ -377,7 +241,9 @@
         </div>
     </div>
 
-    <!-- Modal para respuestas "No" -->
+    <!-- ══════════════════════════════════════
+         MODAL PARA RESPUESTAS "No" (manual)
+         ══════════════════════════════════════ -->
     <div class="modal fade" id="modalNo" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -388,35 +254,27 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Alerta de éxito -->
                     <div class="alert alert-success" id="alertaExito" style="display: none;">
                         <i class="bi bi-check-circle"></i> Observación guardada exitosamente
                     </div>
-                    
-                    <!-- Información de la pregunta -->
                     <div class="alert alert-info mb-3" id="preguntaInfo">
                         <div class="fw-bold" id="preguntaSeccion"></div>
                         <div id="preguntaTexto"></div>
                     </div>
-                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Descripción del problema:</label>
-
-                        <!-- Wrapper para textarea + botón micrófono -->
                         <div class="voice-btn-wrapper">
-                            <textarea class="form-control" id="descripcionProblema" rows="4" 
-                                      placeholder="Describe detalladamente el problema encontrado… o usa el micrófono 🎙️"></textarea>
-                            <button type="button" id="btnDictadoVoz" title="Activar/desactivar dictado por voz">
+                            <textarea class="form-control" id="descripcionProblema" rows="4"
+                                      placeholder="Describe el problema o usa el micrófono 🎙️"></textarea>
+                            <button type="button" id="btnDictadoVoz" title="Activar/desactivar dictado">
                                 <i class="bi bi-mic-fill"></i>
                             </button>
                         </div>
                         <div class="voice-help-text">
                             <i class="bi bi-info-circle"></i>
-                            Toca el 🎙️ para dictar. En dispositivos con audífonos Bluetooth, el botón del auricular puede activar el dictado del sistema operativo directamente en este campo.
+                            Toca 🎙️ para dictar en este campo. Para uso <strong>manos libres</strong> usa el panel flotante (botón 🎙️ inferior derecho).
                         </div>
-                        <div class="form-text">Sé específico y claro en la descripción.</div>
                     </div>
-                    
                     <div class="mb-3">
                         <label class="form-label fw-bold">Agregar evidencias fotográficas:</label>
                         <div class="d-grid gap-2 d-md-flex">
@@ -429,29 +287,21 @@
                         </div>
                         <input type="file" id="imagenInput" accept="image/*" style="display: none;">
                         <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display: none;">
-                        
-                        <!-- Contador de imágenes -->
                         <div class="alert alert-light mt-3 mb-0" id="contadorImagenes">
                             <i class="bi bi-images"></i> Imágenes agregadas: <strong>0</strong>
                         </div>
                     </div>
-                    
-                    <!-- Galería de imágenes -->
                     <div id="galeriaImagenes" class="mb-3" style="display: none;">
                         <label class="form-label fw-bold">Imágenes de esta observación:</label>
                         <div id="thumbnails" class="d-flex flex-wrap justify-content-center"></div>
                     </div>
-                    
-                    <!-- Compresión de imágenes -->
                     <div class="alert alert-warning">
-                        <i class="bi bi-info-circle"></i> 
+                        <i class="bi bi-info-circle"></i>
                         Las imágenes se comprimirán automáticamente para optimizar el tamaño del PDF.
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" id="guardarObservacionBtn">
                         <i class="bi bi-save"></i> Guardar Observación
                     </button>
