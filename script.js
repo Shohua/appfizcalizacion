@@ -6,9 +6,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // CONSTANTES Y CONFIGURACIÓN
         // ============================================
         CONFIG: {
-            MAX_IMAGE_SIZE: 800, // Tamaño máximo para compresión
-            JPEG_QUALITY: 0.7,   // Calidad JPEG para compresión
-            CSV_URL: 'questions.csv', // Ruta al CSV de preguntas
+            MAX_IMAGE_SIZE: 800,
+            JPEG_QUALITY: 0.7,
+            CSV_URL: 'questions.csv',
             STORAGE_KEY: 'fiscalizacionObra_v2'
         },
         
@@ -20,14 +20,28 @@ document.addEventListener("DOMContentLoaded", function() {
             departamentos: [],
             departamentoActual: null,
             observaciones: [],
-            preguntas: [], // Preguntas actualmente en uso
-            preguntasOriginales: [], // Desde questions.csv
-            preguntasPersonalizadas: [], // Desde archivo subido
-            nombreArchivoPersonalizado: null, // Nombre del archivo CSV subido
-            estructura: {}, // Estructura jerárquica
+            preguntas: [],
+            preguntasOriginales: [],
+            preguntasPersonalizadas: [],
+            nombreArchivoPersonalizado: null,
+            estructura: {},
             imagenesTemporales: [],
             preguntaActual: null,
             modalNoInstance: null
+        },
+        
+        // ============================================
+        // ESTADO DEL DICTADO POR VOZ
+        // ============================================
+        voz: {
+            recognition: null,       // Instancia de SpeechRecognition
+            activo: false,           // ¿Está grabando ahora?
+            textoAcumulado: '',      // Texto transcrito en la sesión actual
+            soportado: false,        // ¿El navegador soporta Web Speech API?
+            // Manejo de doble-clic en botón de audífono (MediaSession / teclado)
+            ultimoEventoTecla: 0,
+            contadorClics: 0,
+            timerDobleClick: null
         },
         
         // ============================================
@@ -35,8 +49,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // ============================================
         async init() {
             this.setupEventListeners();
+            this.inicializarVoz();
             await this.cargarPreguntasDesdeCSV();
-            this.cargarAvance(); // Carga el avance y el CSV personalizado si existe
+            this.cargarAvance();
         },
         
         // ============================================
@@ -50,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 const csvText = await response.text();
                 this.estado.preguntasOriginales = this.parsearCSV(csvText);
-                this.estado.preguntas = this.estado.preguntasOriginales; // Usar por defecto al inicio
+                this.estado.preguntas = this.estado.preguntasOriginales;
                 this.construirEstructura();
                 console.log(`✅ ${this.estado.preguntas.length} preguntas cargadas desde CSV`);
             } catch (error) {
@@ -78,18 +93,15 @@ document.addEventListener("DOMContentLoaded", function() {
                         throw new Error("El CSV personalizado está vacío o en formato incorrecto.");
                     }
                     
-                    // Guardar en estado y localStorage
                     this.estado.preguntasPersonalizadas = preguntas;
                     this.estado.nombreArchivoPersonalizado = file.name;
                     
                     localStorage.setItem('csvPersonalizado', csvText);
                     localStorage.setItem('nombreCsvPersonalizado', file.name);
 
-                    // Cambiar al cuestionario personalizado
                     this.estado.preguntas = this.estado.preguntasPersonalizadas;
                     this.construirEstructura();
                     
-                    // Actualizar UI
                     document.getElementById('cuestionarioPersonalizado').checked = true;
                     this.actualizarInfoArchivoPersonalizado();
                     
@@ -100,7 +112,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.revertirAPreguntasPorDefecto();
                 } finally {
                     this.ocultarLoading();
-                    // Limpiar el input para permitir volver a subir el mismo archivo
                     event.target.value = '';
                 }
             };
@@ -169,7 +180,6 @@ document.addEventListener("DOMContentLoaded", function() {
         },
         
         cargarPreguntasPorDefecto() {
-            // Estructura mínima en caso de fallo total
             this.estado.preguntas = [
                 { id: 'O01', section: 'OBSERVACIONES GENERALES', subsection: '', question: '01. Observaciones adicionales', order: '1' }
             ];
@@ -234,12 +244,20 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             document.getElementById('generarExcelBtn')?.addEventListener('click', () => this.generarExcel());
             
-            // Nuevos eventos para cuestionario
+            // Cuestionario
             document.querySelectorAll('input[name="cuestionarioOpcion"]').forEach(radio => {
                 radio.addEventListener('change', () => this.gestionarOpcionesCuestionario());
             });
             document.getElementById('csvFileInput').addEventListener('change', (e) => this.cargarCSVCustom(e));
             document.getElementById('descargarCsvActual').addEventListener('click', () => this.descargarCSV());
+
+            // Botón de dictado en el modal
+            document.getElementById('btnDictadoVoz').addEventListener('click', () => this.toggleDictado());
+
+            // Detener dictado al cerrar el modal
+            document.getElementById('modalNo').addEventListener('hidden.bs.modal', () => {
+                if (this.voz.activo) this.detenerDictado();
+            });
 
             window.addEventListener('beforeunload', (e) => {
                 if (this.estado.departamentoActual || this.estado.departamentos.length > 0) {
@@ -263,6 +281,161 @@ document.addEventListener("DOMContentLoaded", function() {
                 controlesPersonalizado.style.display = 'none';
                 this.estado.preguntas = this.estado.preguntasOriginales;
                 this.construirEstructura();
+            }
+        },
+
+        // ============================================
+        // DICTADO POR VOZ
+        // ============================================
+        inicializarVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                console.warn('⚠️ Web Speech API no soportada en este navegador.');
+                this.voz.soportado = false;
+                // Ocultar botón si no hay soporte
+                const btn = document.getElementById('btnDictadoVoz');
+                if (btn) btn.style.display = 'none';
+                return;
+            }
+            
+            this.voz.soportado = true;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'es-CL';
+            recognition.interimResults = true;  // Resultados parciales en tiempo real
+            recognition.continuous = true;      // No parar automáticamente tras silencio breve
+            recognition.maxAlternatives = 1;
+            
+            // Resultado parcial o final
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                // Acumular texto final
+                if (finalTranscript) {
+                    this.voz.textoAcumulado += finalTranscript;
+                }
+                
+                // Mostrar texto acumulado + parcial en el textarea
+                const textarea = document.getElementById('descripcionProblema');
+                if (textarea) {
+                    textarea.value = this.voz.textoAcumulado + interimTranscript;
+                }
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Error de reconocimiento de voz:', event.error);
+                // No detenemos en "no-speech"; sí en errores críticos
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                    this.mostrarNotificacion('Permiso de micrófono denegado. Actívalo en la configuración del navegador.', 'danger');
+                    this.detenerDictado(false);
+                } else if (event.error === 'aborted') {
+                    // Abortado intencionalmente: no hacer nada
+                } else {
+                    console.warn('Error de voz (no crítico):', event.error);
+                }
+            };
+            
+            recognition.onend = () => {
+                // Si aún está marcado como activo y no fue detenido manualmente,
+                // reiniciar para mantener escucha continua (Chromium detiene tras ~60s)
+                if (this.voz.activo) {
+                    try { recognition.start(); } catch(e) { /* ya estaba arrancando */ }
+                }
+            };
+            
+            this.voz.recognition = recognition;
+        },
+        
+        toggleDictado() {
+            if (this.voz.activo) {
+                this.detenerDictado(true);
+            } else {
+                this.iniciarDictado();
+            }
+        },
+        
+        iniciarDictado() {
+            if (!this.voz.soportado) {
+                this.mostrarNotificacion('Tu navegador no soporta dictado por voz. Usa Chrome en Android.', 'warning');
+                return;
+            }
+            
+            const textarea = document.getElementById('descripcionProblema');
+            if (!textarea) return;
+            
+            // Tomar el texto ya existente en el textarea como base
+            this.voz.textoAcumulado = textarea.value;
+            // Añadir espacio si ya hay contenido y no termina en espacio
+            if (this.voz.textoAcumulado && !this.voz.textoAcumulado.endsWith(' ')) {
+                this.voz.textoAcumulado += ' ';
+            }
+            
+            this.voz.activo = true;
+            
+            try {
+                this.voz.recognition.start();
+            } catch(e) {
+                console.warn('recognition.start() error (puede que ya esté corriendo):', e);
+            }
+            
+            // UI: botón en modo grabación
+            const btn = document.getElementById('btnDictadoVoz');
+            if (btn) {
+                btn.classList.add('recording');
+                btn.innerHTML = '<i class="bi bi-stop-fill"></i>';
+                btn.title = 'Detener dictado';
+            }
+            
+            // Mostrar indicador global
+            const indicator = document.getElementById('voice-indicator');
+            if (indicator) {
+                indicator.classList.add('active');
+                document.getElementById('voice-indicator-text').textContent = 'Escuchando… hable ahora';
+            }
+            
+            // Hacer foco en el textarea
+            textarea.focus();
+        },
+        
+        detenerDictado(guardarTexto = true) {
+            this.voz.activo = false;
+            
+            try {
+                this.voz.recognition.stop();
+            } catch(e) { /* ya detenido */ }
+            
+            // Si guardamos el texto, dejarlo como está en el textarea
+            // Si no (error crítico), no tocamos el campo
+            
+            // UI: botón normal
+            const btn = document.getElementById('btnDictadoVoz');
+            if (btn) {
+                btn.classList.remove('recording');
+                btn.innerHTML = '<i class="bi bi-mic-fill"></i>';
+                btn.title = 'Activar/desactivar dictado por voz';
+            }
+            
+            // Ocultar indicador global
+            const indicator = document.getElementById('voice-indicator');
+            if (indicator) {
+                indicator.classList.remove('active');
+            }
+            
+            if (guardarTexto) {
+                const textarea = document.getElementById('descripcionProblema');
+                if (textarea && textarea.value.trim()) {
+                    this.mostrarNotificacion('Dictado finalizado. Texto guardado en el campo.', 'success');
+                }
             }
         },
 
@@ -325,7 +498,7 @@ document.addEventListener("DOMContentLoaded", function() {
         },
 
         // ============================================
-        // GESTIÓN DE OBSERVACIONES (CORRECCIÓN DEL BUG)
+        // GESTIÓN DE OBSERVACIONES
         // ============================================
         obtenerPreguntaCompleta(preguntaId) {
             return this.estado.preguntas.find(p => p.id === preguntaId);
@@ -369,7 +542,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const container = document.body;
             const alertId = `notif-${Date.now()}`;
             const alertHtml = `
-                <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show" role="alert" style="position:fixed; top:20px; right:20px; z-index:1050;">
+                <div id="${alertId}" class="alert alert-${tipo} alert-dismissible fade show" role="alert" style="position:fixed; top:20px; right:20px; z-index:1050; max-width:320px;">
                     ${mensaje}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -383,9 +556,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 bsAlert.close();
             }, 5000);
         },
-                
-        // El resto del código (mostrarPreguntas, crearSeccionPreguntas, etc.) sigue igual
-        // ...
+
+        // ============================================
+        // MOSTRAR PREGUNTAS CON ACORDEÓN
+        // ============================================
         mostrarPreguntas() {
             const contenedor = document.getElementById('seccionesPreguntas');
             contenedor.innerHTML = '';
@@ -396,61 +570,99 @@ document.addEventListener("DOMContentLoaded", function() {
             tituloDepto.innerHTML = `<h2>Departamento: ${this.estado.departamentoActual.numero}</h2>`;
             contenedor.appendChild(tituloDepto);
             
-            // Mostrar secciones (excepto dormitorios)
+            let primeraSeccion = true;
+
+            // Mostrar secciones (excepto dormitorios y observaciones generales al final)
             Object.keys(this.estado.estructura).forEach(seccion => {
                 if (!seccion.startsWith('F. DORMITORIO') && seccion !== 'OBSERVACIONES GENERALES') {
-                    this.crearSeccionPreguntas(contenedor, seccion);
+                    this.crearSeccionAcordeon(contenedor, seccion, null, primeraSeccion);
+                    primeraSeccion = false;
                 }
             });
             
-            // Crear dormitorios según cantidad
+            // Dormitorios según cantidad
             for (let i = 1; i <= this.estado.datosGenerales.cantidadDormitorios; i++) {
-                this.crearSeccionPreguntas(contenedor, 'F. DORMITORIO', i);
+                this.crearSeccionAcordeon(contenedor, 'F. DORMITORIO', i, primeraSeccion);
+                primeraSeccion = false;
             }
             
             // Observaciones generales
-            this.crearSeccionPreguntas(contenedor, 'OBSERVACIONES GENERALES');
+            this.crearSeccionAcordeon(contenedor, 'OBSERVACIONES GENERALES', null, false);
         },
         
-        crearSeccionPreguntas(contenedor, seccion, dormitorioNumero = null) {
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'section';
-            sectionDiv.dataset.seccion = seccion;
-            if (dormitorioNumero) {
-                sectionDiv.dataset.dormitorio = dormitorioNumero;
-            }
-            
-            const titulo = document.createElement('h3');
-            if (dormitorioNumero && seccion === 'F. DORMITORIO') {
-                titulo.textContent = `${seccion} ${dormitorioNumero}`;
-            } else {
-                titulo.textContent = seccion;
-            }
-            sectionDiv.appendChild(titulo);
-            
-            // Obtener subsecciones de esta sección
+        /**
+         * Crea una sección como acordeón desplegable.
+         * @param {HTMLElement} contenedor - Contenedor padre
+         * @param {string} seccion - Nombre de la sección
+         * @param {number|null} dormitorioNumero - Número de dormitorio (si aplica)
+         * @param {boolean} expandida - Si debe estar expandida por defecto
+         */
+        crearSeccionAcordeon(contenedor, seccion, dormitorioNumero = null, expandida = false) {
             const subsecciones = this.estado.estructura[seccion];
             if (!subsecciones) return;
-            
-            Object.keys(subsecciones).forEach(subseccion => {
+
+            // Wrapper del acordeón
+            const accordionDiv = document.createElement('div');
+            accordionDiv.className = 'section-accordion' + (expandida ? '' : ' collapsed');
+            accordionDiv.dataset.seccion = seccion;
+            if (dormitorioNumero) accordionDiv.dataset.dormitorio = dormitorioNumero;
+
+            // Título de la sección
+            const tituloTexto = (dormitorioNumero && seccion === 'F. DORMITORIO')
+                ? `${seccion} ${dormitorioNumero}`
+                : seccion;
+
+            // Cabecera clickeable
+            const header = document.createElement('div');
+            header.className = 'section-accordion-header';
+            header.innerHTML = `
+                <h3>${tituloTexto}</h3>
+                <div style="display:flex;align-items:center;">
+                    <span class="section-badge" data-obs-badge="${seccion}${dormitorioNumero || ''}">0 obs.</span>
+                    <span class="section-accordion-icon bi bi-chevron-down"></span>
+                </div>
+            `;
+            header.addEventListener('click', () => {
+                accordionDiv.classList.toggle('collapsed');
+            });
+            accordionDiv.appendChild(header);
+
+            // Cuerpo del acordeón
+            const body = document.createElement('div');
+            body.className = 'section-accordion-body';
+
+            // Subsecciones
+            Object.keys(subsecciones).forEach((subseccion, subIdx) => {
                 if (subseccion.trim()) {
-                    const subseccionDiv = document.createElement('div');
-                    subseccionDiv.className = 'mb-4';
-                    
-                    const subseccionTitulo = document.createElement('h5');
-                    subseccionTitulo.className = 'text-secondary mb-3';
-                    subseccionTitulo.textContent = subseccion;
-                    subseccionDiv.appendChild(subseccionTitulo);
-                    
-                    this.crearPreguntasDeSubseccion(subseccionDiv, seccion, subseccion, dormitorioNumero);
-                    sectionDiv.appendChild(subseccionDiv);
+                    // Subsección como acordeón anidado (expandida por defecto la primera)
+                    const subAccordion = document.createElement('div');
+                    subAccordion.className = 'subsection-accordion' + (subIdx === 0 ? '' : ' collapsed');
+
+                    const subHeader = document.createElement('div');
+                    subHeader.className = 'subsection-accordion-header';
+                    subHeader.innerHTML = `
+                        <h5>${subseccion}</h5>
+                        <span class="subsection-accordion-icon bi bi-chevron-down"></span>
+                    `;
+                    subHeader.addEventListener('click', () => {
+                        subAccordion.classList.toggle('collapsed');
+                    });
+
+                    const subBody = document.createElement('div');
+                    subBody.className = 'subsection-accordion-body';
+                    this.crearPreguntasDeSubseccion(subBody, seccion, subseccion, dormitorioNumero);
+
+                    subAccordion.appendChild(subHeader);
+                    subAccordion.appendChild(subBody);
+                    body.appendChild(subAccordion);
                 } else {
-                    // Preguntas sin subsección
-                    this.crearPreguntasDeSubseccion(sectionDiv, seccion, '', dormitorioNumero);
+                    // Preguntas sin subsección, directamente en el body
+                    this.crearPreguntasDeSubseccion(body, seccion, '', dormitorioNumero);
                 }
             });
-            
-            contenedor.appendChild(sectionDiv);
+
+            accordionDiv.appendChild(body);
+            contenedor.appendChild(accordionDiv);
         },
         
         crearPreguntasDeSubseccion(container, seccion, subseccion, dormitorioNumero) {
@@ -466,13 +678,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     preguntaDiv.dataset.dormitorio = dormitorioNumero;
                 }
                 
-                // Texto de la pregunta
                 const label = document.createElement('div');
                 label.className = 'pregunta-texto';
                 label.textContent = pregunta.texto;
                 preguntaDiv.appendChild(label);
                 
-                // Selector de respuesta
                 const select = document.createElement('select');
                 select.className = 'form-select respuesta';
                 select.dataset.preguntaId = pregunta.id;
@@ -512,22 +722,19 @@ document.addEventListener("DOMContentLoaded", function() {
         mostrarModalNo() {
             if (!this.estado.preguntaActual) return;
             
-            // Configurar información de la pregunta
             document.getElementById('preguntaSeccion').textContent = 
                 `${this.estado.preguntaActual.seccion} ${this.estado.preguntaActual.dormitorio ? `- Dormitorio ${this.estado.preguntaActual.dormitorio}` : ''}`;
             document.getElementById('preguntaTexto').textContent = this.estado.preguntaActual.texto;
             
-            // Limpiar campos
             document.getElementById('descripcionProblema').value = '';
             document.getElementById('alertaExito').style.display = 'none';
             this.estado.imagenesTemporales = [];
+            this.voz.textoAcumulado = '';
             
-            // Actualizar galería
             document.getElementById('galeriaImagenes').style.display = 'none';
             document.getElementById('thumbnails').innerHTML = '';
             this.actualizarContadorImagenes();
             
-            // Mostrar modal
             if (!this.estado.modalNoInstance) {
                 this.estado.modalNoInstance = new bootstrap.Modal(document.getElementById('modalNo'));
             }
@@ -544,7 +751,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             event.target.value = '';
             
-            // Verificar tamaño máximo (10MB)
             if (file.size > 10 * 1024 * 1024) {
                 this.mostrarNotificacion('La imagen es demasiado grande (máximo 10MB)', 'warning');
                 return;
@@ -573,7 +779,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         
-                        // Calcular nuevas dimensiones manteniendo proporción
                         let width = img.width;
                         let height = img.height;
                         
@@ -593,7 +798,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Convertir a JPEG con calidad reducida
                         const imagenComprimida = canvas.toDataURL('image/jpeg', this.CONFIG.JPEG_QUALITY);
                         resolve(imagenComprimida);
                     };
@@ -647,7 +851,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const contador = document.getElementById('contadorImagenes');
             contador.querySelector('strong').textContent = this.estado.imagenesTemporales.length;
             
-            // Cambiar color según cantidad
             const strongElem = contador.querySelector('strong');
             if (this.estado.imagenesTemporales.length === 0) {
                 strongElem.style.color = 'inherit';
@@ -705,7 +908,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
             
-            // Crear observación con estructura completa
+            // Detener dictado si estaba activo antes de guardar
+            if (this.voz.activo) {
+                this.detenerDictado(true);
+            }
+            
             const nuevaObservacion = {
                 id: `obs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 departamento: this.estado.departamentoActual.numero,
@@ -724,27 +931,50 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log('Observación guardada:', nuevaObservacion);
             console.log('Total observaciones:', this.estado.observaciones.length);
             
-            // Guardar avance
+            // Actualizar badge de observaciones en la sección del acordeón correspondiente
+            this.actualizarBadgeSeccion(nuevaObservacion.seccion, nuevaObservacion.dormitorio);
+            
             try {
                 this.guardarAvance();
             } catch (e) {
                 console.warn('Guardado parcial, continuando flujo');
             }
             
-            // Limpiar estado
             this.estado.imagenesTemporales = [];
+            this.voz.textoAcumulado = '';
             document.getElementById('descripcionProblema').value = '';
             
-            // Cerrar modal
             if (this.estado.modalNoInstance) {
                 this.estado.modalNoInstance.hide();
             }
             
-            // Notificación
             this.mostrarNotificacion(
                 `Observación guardada (${nuevaObservacion.imagenes.length} imagen(es))`,
                 'success'
             );
+        },
+
+        /**
+         * Actualiza el badge de observaciones en la cabecera del acordeón.
+         */
+        actualizarBadgeSeccion(seccion, dormitorioNumero) {
+            const key = seccion + (dormitorioNumero || '');
+            const badge = document.querySelector(`[data-obs-badge="${key}"]`);
+            if (!badge) return;
+
+            // Contar observaciones de esta sección
+            const count = this.estado.observaciones.filter(obs => {
+                const matchSeccion = obs.seccion === seccion;
+                const matchDorm = dormitorioNumero ? obs.dormitorio == dormitorioNumero : true;
+                return matchSeccion && matchDorm;
+            }).length;
+
+            badge.textContent = `${count} obs.`;
+            if (count > 0) {
+                badge.classList.add('has-obs');
+            } else {
+                badge.classList.remove('has-obs');
+            }
         },
         
         // ============================================
@@ -752,13 +982,11 @@ document.addEventListener("DOMContentLoaded", function() {
         // ============================================
         guardarAvance() {
             try {
-                // Agregar departamento actual a la lista si no existe
                 if (this.estado.departamentoActual && 
                     !this.estado.departamentos.some(d => d.numero === this.estado.departamentoActual.numero)) {
                     this.estado.departamentos.push({ ...this.estado.departamentoActual });
                 }
                 
-                // Guardar solo datos esenciales (evitar guardar preguntas ya que vienen del CSV)
                 const datosParaGuardar = {
                     version: '2.0',
                     datosGenerales: this.estado.datosGenerales,
@@ -766,7 +994,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     departamentoActual: this.estado.departamentoActual,
                     observaciones: this.estado.observaciones.map(obs => ({
                         ...obs,
-                        imagenes: [] // No guardar imágenes en localStorage por tamaño
+                        imagenes: []
                     }))
                 };
                 
@@ -786,7 +1014,6 @@ document.addEventListener("DOMContentLoaded", function() {
         },
         
         cargarAvance() {
-            // Cargar CSV personalizado si existe
             const csvGuardado = localStorage.getItem('csvPersonalizado');
             const nombreGuardado = localStorage.getItem('nombreCsvPersonalizado');
 
@@ -881,7 +1108,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 this.estado.departamentos.push({...this.estado.departamentoActual});
             }
             
-            // Limpiar UI
             document.getElementById('numeroDepto').value = '';
             document.getElementById('seccionesPreguntas').innerHTML = '';
             document.getElementById('finalizarContainer').style.display = 'none';
@@ -889,12 +1115,9 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('selectorDeptoSection').style.display = 'block';
             document.getElementById('cuestionarioSection').style.display = 'block';
 
-            
-            // Guardar y resetear departamento actual
             this.guardarAvance();
             this.estado.departamentoActual = null;
             
-            // Scroll y focus
             document.getElementById('selectorDeptoSection').scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
@@ -910,7 +1133,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             const wb = XLSX.utils.book_new();
             
-            // Hoja 1: Datos generales
             const datosGenerales = [
                 ['INFORME DE FISCALIZACIÓN DE OBRA'],
                 ['Fecha de generación:', new Date().toLocaleDateString()],
@@ -931,23 +1153,13 @@ document.addEventListener("DOMContentLoaded", function() {
             ];
             
             const wsDatos = XLSX.utils.aoa_to_sheet(datosGenerales);
-            
-            // Ajustar anchos de columna
             const wscols = [{wch: 30}, {wch: 40}];
             wsDatos['!cols'] = wscols;
-            
             XLSX.utils.book_append_sheet(wb, wsDatos, 'Datos Generales');
             
-            // Hoja 2: Observaciones detalladas
             const encabezados = [
-                'Departamento',
-                'Sección',
-                'Subsección',
-                'Dormitorio',
-                'Pregunta',
-                'Descripción del Problema',
-                'Cantidad de Imágenes',
-                'Fecha'
+                'Departamento', 'Sección', 'Subsección', 'Dormitorio',
+                'Pregunta', 'Descripción del Problema', 'Cantidad de Imágenes', 'Fecha'
             ];
             
             const filas = this.estado.observaciones.map(obs => [
@@ -964,7 +1176,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const datosObservaciones = [encabezados, ...filas];
             const wsObservaciones = XLSX.utils.aoa_to_sheet(datosObservaciones);
             
-            // Ajustar anchos para la hoja de observaciones
             const wscolsObs = [
                 {wch: 15}, {wch: 25}, {wch: 25}, {wch: 12}, 
                 {wch: 40}, {wch: 50}, {wch: 18}, {wch: 15}
@@ -973,7 +1184,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             XLSX.utils.book_append_sheet(wb, wsObservaciones, 'Observaciones');
             
-            // Generar nombre de archivo
             const nombreArchivo = `Fiscalizacion_${this.estado.datosGenerales.nombreObra.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
             
             XLSX.writeFile(wb, nombreArchivo);
@@ -1018,9 +1228,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 doc.setFont(undefined, 'normal');
                 
                 const datos = [
-                    `Nombre de la Obra: ${this.estado.datosGenerales.nombreObra}`, `Comuna: ${this.estado.datosGenerales.comuna}`,
-                    `Empresa Contratista: ${this.estado.datosGenerales.empresaContratista}`, `Entidad Patrocinante: ${this.estado.datosGenerales.entidadPatrocinante}`,
-                    `Supervisor - FTO SERVIU: ${this.estado.datosGenerales.supervisor}`, `Director de Obra: ${this.estado.datosGenerales.directorObra}`,
+                    `Nombre de la Obra: ${this.estado.datosGenerales.nombreObra}`,
+                    `Comuna: ${this.estado.datosGenerales.comuna}`,
+                    `Empresa Contratista: ${this.estado.datosGenerales.empresaContratista}`,
+                    `Entidad Patrocinante: ${this.estado.datosGenerales.entidadPatrocinante}`,
+                    `Supervisor - FTO SERVIU: ${this.estado.datosGenerales.supervisor}`,
+                    `Director de Obra: ${this.estado.datosGenerales.directorObra}`,
                     `Cantidad de Dormitorios: ${this.estado.datosGenerales.cantidadDormitorios}`
                 ];
                 
@@ -1031,7 +1244,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 yPosition += 5;
 
-                // SECCIÓN DE OBSERVACIONES
                 doc.setFontSize(14);
                 doc.setFont(undefined, 'bold');
                 doc.text('2. OBSERVACIONES REGISTRADAS', margin, yPosition);
@@ -1044,7 +1256,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     yPosition += 10;
                 } else {
                     for (const [index, obs] of this.estado.observaciones.entries()) {
-                        if (yPosition > pageHeight - 60) { // Check space for new entry
+                        if (yPosition > pageHeight - 60) {
                             doc.addPage();
                             yPosition = margin;
                         }
@@ -1086,7 +1298,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             for (const imgData of obs.imagenes) {
                                 const imgProps = doc.getImageProperties(imgData);
                                 const aspectRatio = imgProps.width / imgProps.height;
-                                let imgWidth = 80; // Ancho fijo para las imágenes
+                                let imgWidth = 80;
                                 let imgHeight = imgWidth / aspectRatio;
 
                                 if (yPosition + imgHeight > pageHeight - 20) {
@@ -1099,7 +1311,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             }
                         }
 
-                        // Línea divisoria
                         if (index < this.estado.observaciones.length - 1) {
                             yPosition += 5;
                             if (yPosition > pageHeight - 15) {
@@ -1138,6 +1349,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 observacionesCount: this.estado.observaciones.length,
                 departamentosCount: this.estado.departamentos.length
             };
+            
+            // Detener dictado si estaba activo
+            if (this.voz.activo) this.detenerDictado(false);
             
             this.estado.datosGenerales = {};
             this.estado.departamentos = [];
@@ -1187,4 +1401,3 @@ document.addEventListener("DOMContentLoaded", function() {
     // Inicializar aplicación
     FiscalizadorApp.init();
 });
-
